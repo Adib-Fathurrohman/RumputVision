@@ -151,7 +151,7 @@ class AppNavigationTest {
     fun loginOverHttp_isRejectedWithMessage() {
         composeRule.onNodeWithTag("onboarding_add_server").performClick()
         composeRule.onNodeWithTag("field_name").performTextInput("Rumah")
-        composeRule.onNodeWithTag("field_local_url").performTextInput("http://192.168.100.22")
+        composeRule.onNodeWithTag("field_local_url").performTextInput("http://192.168.1.10")
         composeRule.onNodeWithTag("field_username").performScrollTo().performTextInput("admin")
         composeRule.onNodeWithTag("profile_save").performScrollTo().performClick()
 

@@ -10,7 +10,7 @@ import org.junit.Test
 
 /**
  * Opt-in check against a real Frigate server (no credentials; for an anonymous-access server only):
- *   FRIGATE_LIVE_URL=http://192.168.100.22 ./gradlew :app:testDebugUnitTest --tests '*LiveFrigateServerTest*'
+ *   FRIGATE_LIVE_URL=http://<server-lan-ip> ./gradlew :app:testDebugUnitTest --tests '*LiveFrigateServerTest*'
  * Skipped unless FRIGATE_LIVE_URL is set. Asserts structure only; nothing from the server is printed.
  */
 class LiveFrigateServerTest {

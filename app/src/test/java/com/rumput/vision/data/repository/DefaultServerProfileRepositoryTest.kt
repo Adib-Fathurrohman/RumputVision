@@ -116,9 +116,9 @@ class DefaultServerProfileRepositoryTest {
     @Test
     fun `urls round-trip through the database`() = runTest {
         val (repo, _) = repository()
-        repo.saveProfile(profile(id = "a", local = "http://192.168.100.22", remote = "https://nvr.tail1234.ts.net"), PasswordUpdate.Keep)
+        repo.saveProfile(profile(id = "a", local = "http://192.168.1.10", remote = "https://nvr.tail1234.ts.net"), PasswordUpdate.Keep)
         val loaded = repo.getProfile("a")!!
-        assertEquals("http://192.168.100.22", loaded.localUrl?.value)
+        assertEquals("http://192.168.1.10", loaded.localUrl?.value)
         assertEquals("https://nvr.tail1234.ts.net", loaded.remoteUrl?.value)
         assertTrue(loaded.usesCleartext)
     }

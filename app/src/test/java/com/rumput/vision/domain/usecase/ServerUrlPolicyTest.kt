@@ -43,8 +43,8 @@ class ServerUrlPolicyTest {
     fun `rejects malformed input`() {
         assertEquals(UrlError.EMPTY, error("   "))
         assertEquals(UrlError.MISSING_SCHEME, error("frigate.home.arpa"))
-        assertEquals(UrlError.MISSING_SCHEME, error("192.168.100.22:5000"))
-        assertEquals(UrlError.UNSUPPORTED_SCHEME, error("rtsp://192.168.100.22:8554/garasi"))
+        assertEquals(UrlError.MISSING_SCHEME, error("192.168.1.10:5000"))
+        assertEquals(UrlError.UNSUPPORTED_SCHEME, error("rtsp://192.168.1.10:8554/garasi"))
         assertEquals(UrlError.UNSUPPORTED_SCHEME, error("ftp://host"))
         assertEquals(UrlError.MALFORMED, error("http://exa mple.com"))
         assertEquals(UrlError.MISSING_HOST, error("https://"))
@@ -62,7 +62,7 @@ class ServerUrlPolicyTest {
     @Test
     fun `classifies private, tailscale and public hosts`() {
         val cases = mapOf(
-            "192.168.100.22" to HostClass.PRIVATE_NETWORK,
+            "192.168.1.10" to HostClass.PRIVATE_NETWORK,
             "10.0.0.5" to HostClass.PRIVATE_NETWORK,
             "172.16.0.1" to HostClass.PRIVATE_NETWORK,
             "172.31.255.255" to HostClass.PRIVATE_NETWORK,
@@ -107,7 +107,7 @@ class ServerUrlPolicyTest {
 
     @Test
     fun `cleartext without auth is allowed only to private and tailscale hosts`() {
-        assertNull(ServerUrlPolicy.policyError(valid("http://192.168.100.22"), AuthMode.NONE))
+        assertNull(ServerUrlPolicy.policyError(valid("http://192.168.1.10"), AuthMode.NONE))
         assertNull(ServerUrlPolicy.policyError(valid("http://frigate.home.arpa"), AuthMode.NONE))
         assertNull(ServerUrlPolicy.policyError(valid("http://100.101.102.103"), AuthMode.NONE))
         assertEquals(UrlError.CLEARTEXT_TO_PUBLIC_HOST, ServerUrlPolicy.policyError(valid("http://frigate.example.com"), AuthMode.NONE))
@@ -117,7 +117,7 @@ class ServerUrlPolicyTest {
     fun `warnings flag cleartext, port 5000 and LAN-only remote URLs`() {
         assertEquals(
             setOf(UrlWarning.CLEARTEXT, UrlWarning.UNAUTHENTICATED_INTERNAL_PORT),
-            ServerUrlPolicy.warnings(valid("http://192.168.100.22:5000"), UrlRole.LOCAL),
+            ServerUrlPolicy.warnings(valid("http://192.168.1.10:5000"), UrlRole.LOCAL),
         )
         assertEquals(
             setOf(UrlWarning.REMOTE_URL_IS_LAN_ONLY),

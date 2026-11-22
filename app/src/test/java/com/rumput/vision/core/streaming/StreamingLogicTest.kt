@@ -65,7 +65,7 @@ class StreamingLogicTest {
     fun `only Frigate's own restream paths yield stream names`() {
         assertEquals("garasi_main", FfmpegInputDto("rtsp://127.0.0.1:8554/garasi_main", listOf("record")).restreamName())
         assertEquals("x", FfmpegInputDto("rtsp://localhost:8554/x?video=copy", listOf("record")).restreamName())
-        assertNull(FfmpegInputDto("rtsp://admin:pw@192.168.100.213:554/1/1", listOf("record")).restreamName())
+        assertNull(FfmpegInputDto("rtsp://admin:pw@192.168.1.213:554/1/1", listOf("record")).restreamName())
         assertNull(FfmpegInputDto("rtsp://127.0.0.1:8554/../etc", listOf("record")).restreamName())
 
         val camera = CameraConfigDto(

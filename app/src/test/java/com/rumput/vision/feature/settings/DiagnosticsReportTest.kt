@@ -29,7 +29,7 @@ class DiagnosticsReportTest {
         android = "16 (API 36)",
         device = "Google Pixel",
         profile = profile(
-            local = "http://192.168.100.22",
+            local = "http://192.168.1.10",
             remote = "https://nvr.tail1234.ts.net",
             authMode = AuthMode.FRIGATE_LOGIN,
             username = "rumput-admin",
@@ -73,7 +73,7 @@ class DiagnosticsReportTest {
     @Test
     fun logLinesAreMasked() {
         val log = listOf(
-            DiagnosticsLog.Entry(0, DiagnosticsLog.Level.WARN, "GET http://192.168.100.22:5000/api/stats failed"),
+            DiagnosticsLog.Entry(0, DiagnosticsLog.Level.WARN, "GET http://192.168.1.10:5000/api/stats failed"),
             DiagnosticsLog.Entry(0, DiagnosticsLog.Level.ERROR, "Probe https://nvr.tail1234.ts.net/api/version: Authorization: Bearer abc.def"),
             DiagnosticsLog.Entry(0, DiagnosticsLog.Level.WARN, "Resolved frigate.home.arpa to 10.0.0.5 and fd00::1:2:3"),
         )

@@ -49,7 +49,7 @@ class ServerProfileEditViewModelTest {
     fun `warnings update live while typing`() {
         val vm = viewModel()
         vm.onAuthModeChange(AuthMode.NONE)
-        vm.onLocalUrlChange("http://192.168.100.22:5000")
+        vm.onLocalUrlChange("http://192.168.1.10:5000")
 
         val warnings = vm.uiState.value.validation.localUrlWarnings
         assertTrue(UrlWarning.CLEARTEXT in warnings)

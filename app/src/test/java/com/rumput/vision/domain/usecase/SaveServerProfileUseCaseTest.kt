@@ -47,7 +47,7 @@ class SaveServerProfileUseCaseTest {
 
     @Test
     fun `rejects login over http`() = runTest {
-        val result = useCase(loginDraft.copy(localUrl = "http://192.168.100.22"))
+        val result = useCase(loginDraft.copy(localUrl = "http://192.168.1.10"))
 
         result as SaveProfileResult.Invalid
         assertEquals(UrlError.HTTPS_REQUIRED_FOR_LOGIN, result.validation.localUrlError)
@@ -76,7 +76,7 @@ class SaveServerProfileUseCaseTest {
     fun `no-auth profile over LAN http is allowed with warnings and clears credentials`() = runTest {
         val draft = ServerProfileDraft(
             displayName = "Home",
-            localUrl = "http://192.168.100.22:5000",
+            localUrl = "http://192.168.1.10:5000",
             authMode = AuthMode.NONE,
             username = "ignored",
             password = "ignored",

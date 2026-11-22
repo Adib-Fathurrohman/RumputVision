@@ -13,8 +13,8 @@ class RedactorTest {
     @Test
     fun `redacts credentials embedded in URLs`() {
         assertEquals(
-            "src rtsp://***@192.168.100.201:554/1/1",
-            Redactor.redact("src rtsp://admin:hunter2@192.168.100.201:554/1/1"),
+            "src rtsp://***@192.168.1.201:554/1/1",
+            Redactor.redact("src rtsp://admin:hunter2@192.168.1.201:554/1/1"),
         )
         assertRedacted("""{"url":"https://user:p4ss@host/x"}""", "p4ss")
     }

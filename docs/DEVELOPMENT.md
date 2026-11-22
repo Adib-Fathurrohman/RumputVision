@@ -96,7 +96,7 @@ before adding new fixtures.
 Run the opt-in live test against an anonymous-access server:
 
 ```bash
-FRIGATE_LIVE_URL=http://192.168.100.22 ./gradlew :app:testDebugUnitTest --tests '*LiveFrigateServerTest*'
+FRIGATE_LIVE_URL=http://<server-lan-ip> ./gradlew :app:testDebugUnitTest --tests '*LiveFrigateServerTest*'
 ```
 
 The Keystore cipher (`KeystoreSecretCipher`) needs a real Android Keystore,

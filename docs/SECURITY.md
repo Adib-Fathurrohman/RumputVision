@@ -4,7 +4,7 @@ This document covers two things: (1) the audit of the current home deployment,
 and (2) the security design of the Rumput Vision app.
 
 Audit date: 2026-11-22, performed from a LAN client (macOS) against
-`192.168.100.22` / `frigate.home.arpa`. All probes were read-only `GET`
+the home server's LAN address / `frigate.home.arpa`. All probes were read-only `GET`
 requests or WebSocket handshakes. No configuration was changed.
 
 ---
@@ -19,9 +19,9 @@ credentials or remote access is relied on. **High** = fix soon.
 
 | Endpoint | Result |
 |---|---|
-| `GET http://192.168.100.22/api/profile` (host Nginx, port 80) | `{"username":"anonymous","role":"admin",...}` |
-| `GET http://192.168.100.22:5000/api/profile` (Frigate internal port) | same |
-| `GET http://192.168.100.22:8971/` (Frigate authenticated port) | connection refused (not published) |
+| `GET http://<server-lan-ip>/api/profile` (host Nginx, port 80) | `{"username":"anonymous","role":"admin",...}` |
+| `GET http://<server-lan-ip>:5000/api/profile` (Frigate internal port) | same |
+| `GET http://<server-lan-ip>:8971/` (Frigate authenticated port) | connection refused (not published) |
 
 Frigate's own config has `auth.enabled: true`, but authentication is only
 enforced on port **8971**. Port **5000** is documented as *"Internal
@@ -56,7 +56,7 @@ change config, and restart Frigate.
 
 `GET /api/config` and `GET /api/go2rtc/streams` return the go2rtc stream
 sources, which contain the cameras' RTSP URLs **including the camera
-usernames and passwords** (`rtsp://<user>:<password>@192.168.100.2xx:554/...`).
+usernames and passwords** (`rtsp://<user>:<password>@<camera-ip>:554/...`).
 Combined with S1, anyone on the network can read them.
 
 **Fix**
@@ -94,7 +94,7 @@ device on that network. **The app refuses to send credentials over HTTP**
    periodically (`tailscale cert` again, or `tailscale serve`, which renews
    automatically).
 2. **A real domain with DNS-01 Let's Encrypt** (e.g. `frigate.example.com`
-   resolved by AdGuard to `192.168.100.22` on the LAN). Also trusted by
+   resolved by AdGuard to the server's LAN address). Also trusted by
    Android without app changes.
 3. **Private CA.** Android apps targeting API 24+ do not trust user-installed
    CAs by default. Rumput Vision deliberately does not opt in to user CAs
