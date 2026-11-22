@@ -69,7 +69,7 @@ SettingsScreen ──events──▶ ServerProfileEditViewModel ──▶ SaveSe
                                      └─ CredentialStore (Keystore+DS)  – password / token
 ```
 
-## Connectivity model (Phase 2)
+## Connectivity model (implemented in Phase 2)
 
 Each profile has an optional **local URL** and an optional **remote URL**,
 plus an endpoint preference (`AUTOMATIC`, `LOCAL_ONLY`, `REMOTE_ONLY`).
@@ -78,8 +78,23 @@ when the device is on an unmetered network, then falls back to the remote
 URL. The probe re-runs on `ConnectivityManager` network changes, not on a
 timer. `.home.arpa` names are never assumed to resolve on mobile data.
 
-Cached data (Room) is always tagged with `fetchedAt`. The UI shows it as
-"last known" and never shows a cached camera as online.
+`FrigateSession` (`data/remote/`) owns this. It re-resolves only when the active
+profile, the network (debounced, and the OkHttp connection pool is evicted
+on change), or app foreground state changes, or when the user retries. In the
+background it does nothing. Failed calls re-resolve at most every 10 s.
+
+Resulting states (`domain/model/ConnectionState`):
+
+| State | Meaning |
+|---|---|
+| `Connected(route, url, version, anonymousAdmin)` | API reachable; `anonymousAdmin` flags an auth bypass |
+| `Unauthorized(reason)` | sign-in required, saved password rejected, rate limited, or the profile says "no auth" but the server requires it |
+| `Unreachable(error)` | no network, DNS, timeout, refused, TLS, blocked by policy, … |
+| `NotConfigured` / `Connecting` / `Unknown` | |
+
+Cached data (the Room `cameras` table, DB v2) is shown immediately. Live
+status lives only in memory and expires after 2 minutes. The UI labels cached
+lists and never shows a cached camera as online.
 
 ## Notifications (future)
 

@@ -2,34 +2,105 @@ package com.rumput.vision.feature.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rumput.vision.domain.model.CameraStatus
+import com.rumput.vision.domain.model.CameraWithStatus
 import com.rumput.vision.domain.model.ConnectionState
 import com.rumput.vision.domain.model.ServerProfile
+import com.rumput.vision.domain.model.ServerStatus
+import com.rumput.vision.domain.repository.ServerConnection
 import com.rumput.vision.domain.repository.ServerProfileRepository
+import com.rumput.vision.domain.repository.ServerRepository
+import com.rumput.vision.domain.repository.SignInResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class SignInUiState(
+    val inProgress: Boolean = false,
+    val result: SignInResult? = null,
+)
 
 data class DashboardUiState(
     val isLoading: Boolean = true,
     val activeProfile: ServerProfile? = null,
     val connection: ConnectionState = ConnectionState.Unknown,
-)
+    val serverStatus: ServerStatus? = null,
+    val cameras: List<CameraWithStatus> = emptyList(),
+    val signIn: SignInUiState = SignInUiState(),
+) {
+    val onlineCount: Int get() = cameras.count { it.status == CameraStatus.ONLINE }
+    val showingCachedData: Boolean get() = cameras.isNotEmpty() && cameras.all { it.isCached }
+}
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     profileRepository: ServerProfileRepository,
+    private val connection: ServerConnection,
+    private val serverRepository: ServerRepository,
 ) : ViewModel() {
-    val uiState: StateFlow<DashboardUiState> = profileRepository.observeActiveProfile()
-        .map { profile ->
+
+    private val signIn = MutableStateFlow(SignInUiState())
+
+    /**
+     * Refreshes while the dashboard is collected and the server is connected, then stops.
+     * Emits nothing; merged into [uiState] so it follows the screen's lifecycle.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val polling: Flow<Nothing> = connection.state
+        .map { it is ConnectionState.Connected }
+        .distinctUntilChanged()
+        .transformLatest { connected ->
+            while (connected) {
+                serverRepository.refresh()
+                delay(REFRESH_INTERVAL_MILLIS)
+            }
+        }
+
+    val uiState: StateFlow<DashboardUiState> = merge(
+        combine(
+            profileRepository.observeActiveProfile(),
+            connection.state,
+            serverRepository.observeServerStatus(),
+            serverRepository.observeCameras(),
+            signIn,
+        ) { profile, conn, status, cameras, signInState ->
             DashboardUiState(
                 isLoading = false,
                 activeProfile = profile,
-                // Server connection is implemented in Phase 2; until then the state is honestly "unknown".
-                connection = if (profile == null) ConnectionState.NotConfigured else ConnectionState.Unknown,
+                connection = conn,
+                serverStatus = status,
+                cameras = cameras,
+                signIn = signInState,
             )
+        },
+        polling,
+    ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DashboardUiState())
+
+    fun retry() = connection.reconnect()
+
+    fun signIn(password: String, remember: Boolean) {
+        if (signIn.value.inProgress || password.isEmpty()) return
+        viewModelScope.launch {
+            signIn.value = SignInUiState(inProgress = true)
+            val result = connection.signIn(password, remember)
+            signIn.update { SignInUiState(inProgress = false, result = result) }
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DashboardUiState())
+    }
+
+    private companion object {
+        const val REFRESH_INTERVAL_MILLIS = 30_000L
+    }
 }

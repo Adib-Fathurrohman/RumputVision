@@ -1,0 +1,10 @@
+{
+ "allowed_cameras": [
+  "garasi",
+  "ruang_tengah",
+  "ruang_belakang",
+  "halaman"
+ ],
+ "role": "admin",
+ "username": "anonymous"
+}

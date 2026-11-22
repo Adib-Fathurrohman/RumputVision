@@ -69,10 +69,11 @@ class EncryptedCredentialStoreTest {
         val store = EncryptedCredentialStore(dataStore, cipher)
         store.update("p1") { StoredCredentials(password = "hunter2") }
 
+        // A new instance models the next process start, when the in-memory cache is empty.
         cipher.failAll = true
-        assertNull(store.read("p1"))
+        assertNull(EncryptedCredentialStore(dataStore, cipher).read("p1"))
         cipher.failAll = false
-        assertNull(store.read("p1"))
+        assertNull(EncryptedCredentialStore(dataStore, cipher).read("p1"))
     }
 
     @Test

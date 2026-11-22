@@ -23,6 +23,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -169,6 +171,14 @@ private fun ProfileForm(state: ServerProfileEditUiState, viewModel: ServerProfil
                 AuthMode.NONE -> WarningLine(stringResource(R.string.profile_auth_none_warning))
             }
 
+            OutlinedButton(
+                onClick = viewModel::testConnection,
+                enabled = !state.isTesting,
+                modifier = Modifier.fillMaxWidth().testTag("profile_test"),
+            ) { Text(stringResource(if (state.isTesting) R.string.profile_testing else R.string.profile_test_connection)) }
+            if (state.isTesting) LinearProgressIndicator(Modifier.fillMaxWidth())
+            state.testReport?.let { ConnectionTestResults(it) }
+
             Button(
                 onClick = viewModel::save,
                 enabled = !state.isSaving,
@@ -223,6 +233,9 @@ private fun LoginFields(state: ServerProfileEditUiState, viewModel: ServerProfil
         onCheckedChange = viewModel::onRememberPasswordChange,
         modifier = Modifier.padding(horizontal = 0.dp),
     )
+    if (state.hasStoredCredentials) {
+        TextButton(onClick = viewModel::forgetCredentials) { Text(stringResource(R.string.profile_forget_credentials)) }
+    }
 }
 
 @Composable

@@ -19,4 +19,7 @@ object DatabaseModule {
 
     @Provides
     fun provideServerProfileDao(db: RumputDatabase): ServerProfileDao = db.serverProfileDao()
+
+    @Provides
+    fun provideCameraDao(db: RumputDatabase): CameraDao = db.cameraDao()
 }

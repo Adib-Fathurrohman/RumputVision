@@ -22,6 +22,12 @@ interface ServerProfileRepository {
     suspend fun setActiveProfile(id: String)
 
     suspend fun hasStoredPassword(id: String): Boolean
+
+    /** True if a password or a session token is stored for the profile. */
+    suspend fun hasStoredCredentials(id: String): Boolean
+
+    /** Forgets the password and session token on this device. */
+    suspend fun clearCredentials(id: String)
 }
 
 sealed interface PasswordUpdate {

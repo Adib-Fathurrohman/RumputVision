@@ -41,9 +41,6 @@
     <!-- Dashboard and pending features -->
     <string name="dashboard_no_server_title">No server configured</string>
     <string name="dashboard_no_server_body">Add a Frigate server to see cameras and events.</string>
-    <string name="dashboard_pending_title">Live connection not available yet</string>
-    <string name="dashboard_pending_body">This build saves your server settings but does not connect to Frigate yet. Camera previews, events and server health arrive with server connection support.</string>
-    <string name="cameras_pending_body">Camera discovery is not available in this build yet. Cameras will be loaded from your Frigate server.</string>
     <string name="events_pending_body">The event timeline is not available in this build yet.</string>
     <string name="recordings_pending_body">Recording playback is not available in this build yet.</string>
 
@@ -127,4 +124,60 @@
     <string name="about_android">Android</string>
     <string name="about_device">Device</string>
     <string name="about_security_body">Credentials are encrypted with a key held in the Android Keystore and are never included in backups. Passwords are only sent over HTTPS with certificate validation. Logs never contain passwords or tokens.</string>
+    <!-- Phase 2: connection, status, cameras -->
+    <string name="action_refresh">Refresh</string>
+    <string name="route_local">Local</string>
+    <string name="route_remote">Remote</string>
+    <string name="status_version">Frigate version</string>
+    <string name="status_update_available">Update available</string>
+    <string name="status_uptime">Uptime</string>
+    <string name="status_detector">Detector %1$s</string>
+    <string name="status_storage">Recording storage</string>
+    <string name="warning_anonymous_admin">This server gives admin access to anyone without signing in. Anyone who can reach this address can view, change or delete everything. See docs/SECURITY.md.</string>
+    <string name="dashboard_cameras_header">Cameras · online %2$d / %1$d</string>
+    <string name="dashboard_unreachable_title">Cannot reach the server</string>
+    <string name="dashboard_server_requires_login_title">This server requires signing in</string>
+    <string name="dashboard_server_requires_login_body">The server profile is set to no authentication. Edit it, choose Frigate login, and use an HTTPS address.</string>
+    <string name="sign_in_title">Sign in to Frigate</string>
+    <string name="sign_in_body">Your session has expired or has not started yet.</string>
+    <string name="sign_in_action">Sign in</string>
+    <string name="sign_in_invalid">Username or password is incorrect.</string>
+    <string name="sign_in_saved_password_rejected">The saved password was rejected, so it has been removed. Enter the current password.</string>
+    <string name="cameras_load_failed">Could not load cameras</string>
+    <string name="cameras_empty_title">No cameras</string>
+    <string name="cameras_empty_body">Frigate reported no cameras in its configuration.</string>
+    <string name="cameras_cached_notice">Showing the last known camera list. Current status is unknown until the server is reachable.</string>
+    <string name="camera_fps">%1$.1f fps</string>
+    <string name="camera_connection_quality">connection %1$s</string>
+    <string name="camera_disabled_in_config">Disabled in Frigate config</string>
+    <string name="time_just_now">just now</string>
+    <string name="camera_last_seen">Last seen online %1$s</string>
+    <string name="profile_test_connection">Test connection</string>
+    <string name="profile_testing">Testing…</string>
+    <string name="profile_forget_credentials">Forget saved sign-in</string>
+    <string name="test_nothing_to_test">Enter a valid URL to test.</string>
+    <string name="test_reachable_version">Frigate %1$s is reachable</string>
+    <string name="test_reachable">Frigate is reachable</string>
+    <string name="test_redirected">The server redirects to %1$s. Use that address instead.</string>
+    <string name="test_not_frigate">Something answered, but it is not the Frigate API.</string>
+    <string name="test_anonymous_admin">No sign-in needed, and anonymous users are admins. Authentication is bypassed on this address.</string>
+    <string name="test_anonymous">No sign-in needed (role: %1$s).</string>
+    <string name="test_signed_in">Signed in as %1$s (%2$s).</string>
+    <string name="test_sign_in_required">Sign-in required. Enter the password to test it.</string>
+    <string name="test_server_requires_login">This server requires signing in. Choose Frigate login.</string>
+
+    <!-- Errors -->
+    <string name="error_not_configured">No server is configured.</string>
+    <string name="error_unauthorized">The server rejected the request. Sign in again.</string>
+    <string name="error_forbidden">Your Frigate user is not allowed to do this.</string>
+    <string name="error_rate_limited">Too many sign-in attempts. Wait a moment and try again.</string>
+    <string name="error_invalid_response">The server answered, but not in the format Frigate uses.</string>
+    <string name="error_http">The server returned an error (HTTP %1$d).</string>
+    <string name="error_no_network">No network connection.</string>
+    <string name="error_host_not_found">Server name not found. On mobile data, local names such as .home.arpa do not resolve; use the remote URL.</string>
+    <string name="error_timeout">The server did not respond in time.</string>
+    <string name="error_refused">The connection was refused. Check the address and port.</string>
+    <string name="error_tls">The server\'s certificate is not trusted, so the connection was stopped. Install a certificate from a trusted authority (for example Tailscale HTTPS).</string>
+    <string name="error_insecure_transport">Blocked: credentials are never sent over unencrypted HTTP.</string>
+    <string name="error_network_other">A network error occurred.</string>
 </resources>

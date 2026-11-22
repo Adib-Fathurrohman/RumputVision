@@ -1,0 +1,377 @@
+{
+ "camera_fps": 20.2,
+ "cameras": {
+  "garasi": {
+   "audio_dBFS": 0,
+   "audio_rms": 0,
+   "camera_fps": 5.1,
+   "capture_cpu": "7.8",
+   "capture_pid": 1268,
+   "connection_quality": "unusable",
+   "detect_cpu": "3.0",
+   "detection_enabled": false,
+   "detection_fps": 0.0,
+   "expected_fps": 5,
+   "ffmpeg_cpu": "17.5",
+   "ffmpeg_pid": 120200,
+   "pid": 1208,
+   "process_fps": 5.1,
+   "reconnects_last_hour": 52,
+   "skipped_fps": 0.0,
+   "stalls_last_hour": 18
+  },
+  "halaman": {
+   "audio_dBFS": 0,
+   "audio_rms": 0,
+   "camera_fps": 5.1,
+   "capture_cpu": "7.5",
+   "capture_pid": 1408,
+   "connection_quality": "excellent",
+   "detect_cpu": "3.1",
+   "detection_enabled": false,
+   "detection_fps": 0.0,
+   "expected_fps": 5,
+   "ffmpeg_cpu": "17.3",
+   "ffmpeg_pid": 80950,
+   "pid": 1345,
+   "process_fps": 5.1,
+   "reconnects_last_hour": 0,
+   "skipped_fps": 0.0,
+   "stalls_last_hour": 0
+  },
+  "ruang_belakang": {
+   "audio_dBFS": 0,
+   "audio_rms": 0,
+   "camera_fps": 5.0,
+   "capture_cpu": "3.9",
+   "capture_pid": 999,
+   "connection_quality": "poor",
+   "detect_cpu": "2.3",
+   "detection_enabled": false,
+   "detection_fps": 0.0,
+   "expected_fps": 5,
+   "ffmpeg_cpu": "10.1",
+   "ffmpeg_pid": 119831,
+   "pid": 923,
+   "process_fps": 5.0,
+   "reconnects_last_hour": 10,
+   "skipped_fps": 0.0,
+   "stalls_last_hour": 2
+  },
+  "ruang_tengah": {
+   "audio_dBFS": 0,
+   "audio_rms": 0,
+   "camera_fps": 5.0,
+   "capture_cpu": "3.8",
+   "capture_pid": 1136,
+   "connection_quality": "unusable",
+   "detect_cpu": "2.3",
+   "detection_enabled": false,
+   "detection_fps": 0.0,
+   "expected_fps": 5,
+   "ffmpeg_cpu": "10.1",
+   "ffmpeg_pid": 118592,
+   "pid": 1071,
+   "process_fps": 5.0,
+   "reconnects_last_hour": 40,
+   "skipped_fps": 0.0,
+   "stalls_last_hour": 10
+  }
+ },
+ "cpu_usages": {
+  "100": {
+   "cmdline": "s6-log -b -- T 1 n0 s10000000 T /dev/shm/logs/go2rtc",
+   "cpu": "0.0",
+   "cpu_average": "0",
+   "mem": "0.0"
+  },
+  "1071": {
+   "cmdline": "frigate.process:ruang_tengah",
+   "cpu": "2.3",
+   "cpu_average": "2",
+   "mem": "1.5"
+  },
+  "1136": {
+   "cmdline": "frigate.capture:ruang_tengah",
+   "cpu": "3.8",
+   "cpu_average": "4",
+   "mem": "1.6"
+  },
+  "115": {
+   "cmdline": "/usr/local/go2rtc/bin/go2rtc -config=/config/go2rtc_homekit.yml -config=/dev/shm/go2rtc.yaml",
+   "cpu": "21.1",
+   "cpu_average": "18",
+   "mem": "0.5"
+  },
+  "118592": {
+   "cmdline": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -hide_banner -loglevel warning -hwaccel_flags allow_profile_mismatch -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -user_agent FFmpeg Frigate/0.18.2-cfa08c5 -avoid_negative_ts make_zero -fflags +genpts+discardcorrupt -rtsp_transport tcp -timeout 10000000 -use_wallclock_as_timestamps 1 -i rtsp://127.0.0.1:8554/ruang_tengah_main -f segment -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -an /tmp/cache/ruang_tengah@%Y%m%d%H%M%S%z.mp4 -r 5 -vf fps=5,scale_vaapi=w=1920:h=1080,hwdownload,format=nv12 -threads 2 -f rawvideo -pix_fmt yuv420p pipe:",
+   "cpu": "10.1",
+   "cpu_average": "9",
+   "mem": "0.9"
+  },
+  "119831": {
+   "cmdline": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -hide_banner -loglevel warning -hwaccel_flags allow_profile_mismatch -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -user_agent FFmpeg Frigate/0.18.2-cfa08c5 -avoid_negative_ts make_zero -fflags +genpts+discardcorrupt -rtsp_transport tcp -timeout 10000000 -use_wallclock_as_timestamps 1 -i rtsp://127.0.0.1:8554/ruang_belakang_main -f segment -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -an /tmp/cache/ruang_belakang@%Y%m%d%H%M%S%z.mp4 -r 5 -vf fps=5,scale_vaapi=w=1920:h=1080,hwdownload,format=nv12 -threads 2 -f rawvideo -pix_fmt yuv420p pipe:",
+   "cpu": "10.1",
+   "cpu_average": "8",
+   "mem": "0.9"
+  },
+  "120200": {
+   "cmdline": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -hide_banner -loglevel warning -hwaccel_flags allow_profile_mismatch -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -user_agent FFmpeg Frigate/0.18.2-cfa08c5 -avoid_negative_ts make_zero -fflags +genpts+discardcorrupt -rtsp_transport tcp -timeout 10000000 -use_wallclock_as_timestamps 1 -i rtsp://127.0.0.1:8554/garasi_main -f segment -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -an /tmp/cache/garasi@%Y%m%d%H%M%S%z.mp4 -r 5 -vf fps=5,scale_vaapi=w=2560:h=1440,hwdownload,format=nv12 -threads 2 -f rawvideo -pix_fmt yuv420p pipe:",
+   "cpu": "17.5",
+   "cpu_average": "9",
+   "mem": "1.1"
+  },
+  "1208": {
+   "cmdline": "frigate.process:garasi",
+   "cpu": "3.0",
+   "cpu_average": "2",
+   "mem": "1.5"
+  },
+  "1268": {
+   "cmdline": "frigate.capture:garasi",
+   "cpu": "7.8",
+   "cpu_average": "6",
+   "mem": "1.6"
+  },
+  "1345": {
+   "cmdline": "frigate.process:halaman",
+   "cpu": "3.1",
+   "cpu_average": "2",
+   "mem": "1.5"
+  },
+  "135": {
+   "cmdline": "bash ./run.user go2rtc-healthcheck",
+   "cpu": "0.0",
+   "cpu_average": "0",
+   "mem": "0.0"
+  },
+  "136": {
+   "cmdline": "python3 -u -m frigate",
+   "cpu": "9.8",
+   "cpu_average": "10",
+   "mem": "6.6"
+  },
+  "1408": {
+   "cmdline": "frigate.capture:halaman",
+   "cpu": "7.5",
+   "cpu_average": "6",
+   "mem": "1.6"
+  },
+  "30": {
+   "cmdline": "s6-supervise go2rtc",
+   "cpu": "0.0",
+   "cpu_average": "0",
+   "mem": "0.0"
+  },
+  "35": {
+   "cmdline": "s6-supervise go2rtc-healthcheck",
+   "cpu": "0.0",
+   "cpu_average": "0",
+   "mem": "0.0"
+  },
+  "37": {
+   "cmdline": "s6-supervise go2rtc-log",
+   "cpu": "0.0",
+   "cpu_average": "0",
+   "mem": "0.0"
+  },
+  "391": {
+   "cmdline": "python3 -u -m frigate",
+   "cpu": "3.0",
+   "cpu_average": "2",
+   "mem": "2.1"
+  },
+  "398": {
+   "cmdline": "/usr/bin/python3 -Wignore:::numpy.core.getlimits -c from multiprocessing.resource_tracker import main;main(4)",
+   "cpu": "0.0",
+   "cpu_average": "0",
+   "mem": "0.1"
+  },
+  "750": {
+   "cmdline": "/usr/bin/python3 -Wignore:::numpy.core.getlimits -c from multiprocessing.forkserver import main; main(27, 28, ['sqlite3', 'numpy', 'cv2', 'peewee', 'zmq', 'ruamel.yaml', 'frigate.camera.maintainer'], **{'sys_path': ['/opt/frigate', '/usr/lib/python311.zip', '/usr/lib/python3.11', '/usr/lib/python3.11/lib-dynload', '/usr/local/lib/python3.11/dist-packages', '/usr/lib/python3/dist-packages']})",
+   "cpu": "0.0",
+   "cpu_average": "0",
+   "mem": "2.3"
+  },
+  "764": {
+   "cmdline": "frigate.recording_manager",
+   "cpu": "3.1",
+   "cpu_average": "3",
+   "mem": "1.8"
+  },
+  "777": {
+   "cmdline": "frigate.review_segment_manager",
+   "cpu": "0.9",
+   "cpu_average": "0",
+   "mem": "1.8"
+  },
+  "787": {
+   "cmdline": "frigate.embeddings_manager",
+   "cpu": "1.5",
+   "cpu_average": "1",
+   "mem": "1.8"
+  },
+  "80950": {
+   "cmdline": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -hide_banner -loglevel warning -hwaccel_flags allow_profile_mismatch -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -user_agent FFmpeg Frigate/0.18.2-cfa08c5 -avoid_negative_ts make_zero -fflags +genpts+discardcorrupt -rtsp_transport tcp -timeout 10000000 -use_wallclock_as_timestamps 1 -i rtsp://127.0.0.1:8554/halaman_main -f segment -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -an /tmp/cache/halaman@%Y%m%d%H%M%S%z.mp4 -r 5 -vf fps=5,scale_vaapi=w=2560:h=1440,hwdownload,format=nv12 -threads 2 -f rawvideo -pix_fmt yuv420p pipe:",
+   "cpu": "17.3",
+   "cpu_average": "15",
+   "mem": "1.3"
+  },
+  "835": {
+   "cmdline": "frigate.detector:dummy",
+   "cpu": "0.0",
+   "cpu_average": "0",
+   "mem": "1.7"
+  },
+  "858": {
+   "cmdline": "frigate.output",
+   "cpu": "8.8",
+   "cpu_average": "9",
+   "mem": "2.2"
+  },
+  "886": {
+   "cmdline": "frigate.audio_manager",
+   "cpu": "0.1",
+   "cpu_average": "0",
+   "mem": "1.5"
+  },
+  "900": {
+   "cmdline": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -threads 1 -f rawvideo -pix_fmt yuv420p -video_size 1920x1080 -i pipe: -threads 1 -f mpegts -s 1280x720 -codec:v mpeg1video -q 8 -bf 0 pipe:",
+   "cpu": "0.0",
+   "cpu_average": "0",
+   "mem": "0.7"
+  },
+  "907": {
+   "cmdline": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -threads 1 -f rawvideo -pix_fmt yuv420p -video_size 1920x1080 -i pipe: -threads 1 -f mpegts -s 1280x720 -codec:v mpeg1video -q 8 -bf 0 pipe:",
+   "cpu": "0.0",
+   "cpu_average": "0",
+   "mem": "0.6"
+  },
+  "915": {
+   "cmdline": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -threads 1 -f rawvideo -pix_fmt yuv420p -video_size 2560x1440 -i pipe: -threads 1 -f mpegts -s 1280x720 -codec:v mpeg1video -q 8 -bf 0 pipe:",
+   "cpu": "0.0",
+   "cpu_average": "1",
+   "mem": "1.2"
+  },
+  "923": {
+   "cmdline": "frigate.process:ruang_belakang",
+   "cpu": "2.3",
+   "cpu_average": "2",
+   "mem": "1.5"
+  },
+  "924": {
+   "cmdline": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -threads 1 -f rawvideo -pix_fmt yuv420p -video_size 2560x1440 -i pipe: -threads 1 -f mpegts -s 1280x720 -codec:v mpeg1video -q 8 -bf 0 pipe:",
+   "cpu": "0.1",
+   "cpu_average": "0",
+   "mem": "0.7"
+  },
+  "942": {
+   "cmdline": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -threads 1 -f rawvideo -pix_fmt yuv420p -video_size 1280x720 -i pipe: -threads 1 -f mpegts -s 1280x720 -codec:v mpeg1video -q 8 -bf 0 pipe:",
+   "cpu": "0.0",
+   "cpu_average": "0",
+   "mem": "0.5"
+  },
+  "999": {
+   "cmdline": "frigate.capture:ruang_belakang",
+   "cpu": "3.9",
+   "cpu_average": "4",
+   "mem": "1.6"
+  },
+  "frigate.full_system": {
+   "cpu": "36.3",
+   "mem": "41.3"
+  }
+ },
+ "detection_fps": 0.0,
+ "detectors": {
+  "dummy": {
+   "cpu": "0.0",
+   "detection_start": 0.0,
+   "inference_speed": 10.0,
+   "mem": "1.7",
+   "pid": 835
+  }
+ },
+ "embeddings": {},
+ "gpu_usages": {
+  "Core i5-5300U CPU @ 2.30GHz iGPU": {
+   "clients": {
+    "118592": "7.76%",
+    "119831": "7.69%",
+    "120200": "13.92%",
+    "136": "0.0%",
+    "80950": "13.13%"
+   },
+   "compute": "0.0%",
+   "dec": "42.51%",
+   "gpu": "42.51%",
+   "mem": "-%",
+   "vendor": "intel"
+  }
+ },
+ "process_fps": 20.2,
+ "processes": {
+  "audio_detector": {
+   "cpu": "0.1",
+   "mem": "1.5",
+   "pid": 886
+  },
+  "embeddings": {
+   "cpu": "1.5",
+   "mem": "1.8",
+   "pid": 787
+  },
+  "go2rtc": {
+   "cpu": "21.1",
+   "mem": "0.5",
+   "pid": 115
+  },
+  "recording": {
+   "cpu": "3.1",
+   "mem": "1.8",
+   "pid": 764
+  },
+  "review_segment": {
+   "cpu": "0.9",
+   "mem": "1.8",
+   "pid": 777
+  }
+ },
+ "service": {
+  "last_updated": 1795327977,
+  "latest_version": "0.18.3",
+  "storage": {
+   "/dev/shm": {
+    "available": 462.0,
+    "camera_frame_size": 20.599999999999998,
+    "free": 145.1,
+    "min_shm": 462,
+    "mount_type": "tmpfs",
+    "shm_frame_count": 22,
+    "total": 512.0,
+    "used": 366.9
+   },
+   "/media/frigate/clips": {
+    "free": 413534.8,
+    "mount_type": "ext4",
+    "total": 468701.6,
+    "used": 31286.4
+   },
+   "/media/frigate/recordings": {
+    "free": 413534.8,
+    "mount_type": "ext4",
+    "total": 468701.6,
+    "used": 31286.4
+   },
+   "/tmp/cache": {
+    "free": 416.1,
+    "mount_type": "tmpfs",
+    "total": 488.3,
+    "used": 72.2
+   }
+  },
+  "uptime": 11213,
+  "version": "0.18.2-cfa08c5"
+ },
+ "skipped_fps": 0.0
+}

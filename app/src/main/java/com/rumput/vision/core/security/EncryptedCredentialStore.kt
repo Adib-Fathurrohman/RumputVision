@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.util.Base64
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,29 +25,43 @@ class EncryptedCredentialStore @Inject constructor(
 
     private val json = Json { ignoreUnknownKeys = true }
 
+    /**
+     * Decrypted values, so the session token can be attached to every request without a Keystore
+     * operation each time. All writes go through this class, which keeps the cache coherent.
+     */
+    private val cache = ConcurrentHashMap<String, CacheEntry>()
+
+    private class CacheEntry(val value: StoredCredentials?)
+
     override suspend fun read(profileId: String): StoredCredentials? {
+        cache[profileId]?.let { return it.value }
         val key = keyFor(profileId)
-        val encoded = dataStore.data.first()[key] ?: return null
-        val decoded = decode(profileId, encoded)
-        if (decoded == null) dataStore.edit { it.remove(key) }
+        val encoded = dataStore.data.first()[key]
+        val decoded = encoded?.let { decode(profileId, it) }
+        if (encoded != null && decoded == null) dataStore.edit { it.remove(key) }
+        cache[profileId] = CacheEntry(decoded)
         return decoded
     }
 
     override suspend fun update(profileId: String, transform: (StoredCredentials?) -> StoredCredentials?) {
         val key = keyFor(profileId)
+        var stored: StoredCredentials? = null
         dataStore.edit { prefs ->
             val current = prefs[key]?.let { decode(profileId, it) }
-            val next = transform(current)
-            if (next == null || next.isEmpty) {
+            val next = transform(current)?.takeUnless { it.isEmpty }
+            if (next == null) {
                 prefs.remove(key)
             } else {
                 prefs[key] = encode(profileId, next)
             }
+            stored = next
         }
+        cache[profileId] = CacheEntry(stored)
     }
 
     override suspend fun delete(profileId: String) {
         dataStore.edit { it.remove(keyFor(profileId)) }
+        cache[profileId] = CacheEntry(null)
     }
 
     private fun encode(profileId: String, credentials: StoredCredentials): String {

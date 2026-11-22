@@ -53,4 +53,8 @@ class DefaultServerProfileRepository @Inject constructor(
     }
 
     override suspend fun hasStoredPassword(id: String): Boolean = credentialStore.read(id)?.password != null
+
+    override suspend fun hasStoredCredentials(id: String): Boolean = credentialStore.read(id) != null
+
+    override suspend fun clearCredentials(id: String) = credentialStore.delete(id)
 }

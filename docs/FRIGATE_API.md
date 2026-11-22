@@ -69,7 +69,23 @@ in `stats.cameras` with `camera_fps > 0`. Realtime status also arrives on
 Unknown keys must be ignored (`ignoreUnknownKeys = true`): the config is
 large and changes between versions.
 
-## Authentication (Spec + Docs; not yet verified, 8971 is closed)
+Implemented in `data/remote/dto/ConfigDto.kt`. `go2rtc.streams` values are
+decoded as opaque JSON and never read, stored or logged.
+
+**Display names:** Frigate 0.18 has no friendly-name field for cameras, so
+the app derives one from the name (`ruang_tengah` → "Ruang Tengah").
+
+**How the app uses these (Phase 2):**
+- Connection probe: `GET /api/version` (unauthenticated; a 401 also counts as
+  "server present, sign-in required"), then `GET /api/profile`.
+- Camera discovery and health: `GET /api/config` + `GET /api/stats` in
+  parallel, every 30 s **only while Home is visible and connected**, and on
+  demand from the Cameras tab.
+- Camera status: online if `stats.cameras.<name>.camera_fps > 0`, offline
+  otherwise, disabled if `enabled: false`, and unknown if the data is older than
+  2 minutes or the server is unreachable.
+
+## Authentication (Spec + Docs; implemented, not yet verified against 8971, which is closed)
 
 | Method & path | Notes |
 |---|---|
@@ -186,7 +202,7 @@ disabled on this server). Observed:
 {"topic": "garasi/status/detect", "payload": "online"}
 ```
 
-Planned use (Phase 2/5, verify each topic before relying on it): camera
+Not used yet. Planned use (later phase; verify each topic before relying on it): camera
 status (`<camera>/status/<role>`), `events`, `reviews`, `stats`,
 `camera_activity`. Reconnect with exponential backoff and de-duplicate by
 event or review `id` plus `type`.

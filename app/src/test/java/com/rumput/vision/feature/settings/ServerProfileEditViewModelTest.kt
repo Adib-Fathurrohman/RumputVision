@@ -10,6 +10,7 @@ import com.rumput.vision.domain.usecase.SaveServerProfileUseCase
 import com.rumput.vision.domain.usecase.UrlError
 import com.rumput.vision.domain.usecase.UrlWarning
 import com.rumput.vision.domain.usecase.ValidateServerProfileUseCase
+import com.rumput.vision.testing.FakeConnectionTester
 import com.rumput.vision.testing.FakeServerProfileRepository
 import com.rumput.vision.testing.MainDispatcherRule
 import com.rumput.vision.testing.profile
@@ -30,7 +31,10 @@ class ServerProfileEditViewModelTest {
         repository = repository,
         validate = ValidateServerProfileUseCase(),
         saveProfile = SaveServerProfileUseCase(repository, ValidateServerProfileUseCase(), Clock { 0 }, IdGenerator { "new" }),
+        connectionTester = tester,
     )
+
+    private val tester = FakeConnectionTester()
 
     @Test
     fun `new profile starts empty with errors hidden`() {
@@ -116,5 +120,34 @@ class ServerProfileEditViewModelTest {
 
         assertTrue(vm.uiState.value.finished)
         assertTrue(repository.profiles.value.isEmpty())
+    }
+
+    @Test
+    fun `test connection validates first, runs the tester, and results reset on edit`() {
+        val vm = viewModel()
+        vm.onDisplayNameChange("Home")
+        vm.onLocalUrlChange("http://frigate.home.arpa")
+        vm.onUsernameChange("admin")
+
+        vm.testConnection() // login over http is invalid: nothing is contacted
+        assertTrue(tester.tested.isEmpty())
+        assertTrue(vm.uiState.value.showErrors)
+
+        tester.report = com.rumput.vision.domain.model.ConnectionTestReport(
+            listOf(
+                com.rumput.vision.domain.model.EndpointTestResult(
+                    com.rumput.vision.domain.model.ConnectionRoute.LOCAL,
+                    "https://frigate.home.arpa",
+                    com.rumput.vision.domain.model.EndpointTestOutcome.NotFrigate,
+                ),
+            ),
+        )
+        vm.onLocalUrlChange("https://frigate.home.arpa")
+        vm.testConnection()
+        assertEquals(1, tester.tested.size)
+        assertEquals(tester.report, vm.uiState.value.testReport)
+
+        vm.onLocalUrlChange("https://other.home.arpa")
+        assertEquals(null, vm.uiState.value.testReport)
     }
 }

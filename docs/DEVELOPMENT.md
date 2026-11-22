@@ -70,13 +70,35 @@ a physical device for Phase 4.
 | `AppPreferencesDataSourceTest` | JVM + real DataStore | Defaults, updates, clamping |
 | `DefaultServerProfileRepositoryTest` | Robolectric + in-memory Room | Real SQL: active profile rules, delete, credentials |
 | `AppNavigationTest` | Robolectric + Hilt + Compose | Onboarding → add server → all tabs; HTTPS rejection message |
+| `FrigateApiSerializationTest` | MockWebServer + recorded fixtures | Real 0.18.2 config/stats/profile/version parse |
+| `TransportGuardInterceptorTest` | MockWebServer | No credentials or login over HTTP, no HTTP to public hosts, no redirects |
+| `SessionTokenTest`, `FrigateLoginServiceTest` | HTTPS MockWebServer | Cookie token, expiry, invalid/rate-limited, TLS never bypassed |
+| `FrigateSessionTest` | HTTPS MockWebServer | Local/remote fallback, cellular order, offline/background, login, re-auth, token refresh, sign in/out |
+| `FrigateConnectionTesterTest` | MockWebServer | Anonymous-admin detection, sign-in check, redirects, non-Frigate, policy |
+| `FrigateServerRepositoryTest` | Robolectric + Room + MockWebServer | Discovery, status, stale/cached handling, removed cameras |
+| `MigrationTest` | Robolectric + SQLite | Real v1 database (from exported schema) → v2 |
+| `DashboardViewModelTest` | coroutines-test | 30 s refresh only while observed and connected; sign-in |
+| `LiveFrigateServerTest` | opt-in, real server | Real stack against `FRIGATE_LIVE_URL` (skipped when unset) |
+
+Recorded fixtures live in `app/src/test/resources/frigate/0.18.2/`. They
+were captured from the real server and **sanitized**: go2rtc stream sources
+were replaced and secret-named fields masked. Re-check for credentials
+before adding new fixtures.
+
+Run the opt-in live test against an anonymous-access server:
+
+```bash
+FRIGATE_LIVE_URL=http://192.168.100.22 ./gradlew :app:testDebugUnitTest --tests '*LiveFrigateServerTest*'
+```
 
 The Keystore cipher (`KeystoreSecretCipher`) needs a real Android Keystore
 and is replaced by `FakeSecretCipher` in JVM tests. It should get an
 instrumented test (`androidTest`) once a device is part of the test routine.
 
-No test needs the home server. A mock Frigate API (OkHttp `MockWebServer`
-with recorded responses from `docs/reference/`) arrives with Phase 2.
+No test needs the home server: `testing/FrigateTestServer.kt` is a scriptable
+Frigate stand-in (HTTP or HTTPS with a test CA, optional 8971-style auth).
+Run lint separately from tests (`./gradlew :app:lintDebug`). Running both in
+one invocation occasionally fails `lintAnalyzeDebugUnitTest`.
 
 ## Release build
 

@@ -1,0 +1,1875 @@
+{
+ "audio": {
+  "enabled": false,
+  "filters": {
+   "bark": {
+    "threshold": 0.8
+   },
+   "fire_alarm": {
+    "threshold": 0.8
+   },
+   "speech": {
+    "threshold": 0.8
+   },
+   "yell": {
+    "threshold": 0.8
+   }
+  },
+  "listen": [
+   "bark",
+   "fire_alarm",
+   "speech",
+   "yell"
+  ],
+  "max_not_heard": 30,
+  "min_volume": 500,
+  "num_threads": 2
+ },
+ "audio_transcription": {
+  "device": "CPU",
+  "enabled": false,
+  "language": "en",
+  "live_enabled": false,
+  "model_size": "small"
+ },
+ "auth": {
+  "admin_first_time_login": false,
+  "cookie_name": "frigate_token",
+  "cookie_secure": false,
+  "enabled": true,
+  "hash_iterations": 600000,
+  "refresh_time": 1800,
+  "reset_admin_password": false,
+  "roles": {
+   "admin": [],
+   "viewer": []
+  },
+  "session_length": 86400,
+  "trusted_proxies": []
+ },
+ "birdseye": {
+  "enabled": true,
+  "height": 720,
+  "idle_heartbeat_fps": 0.0,
+  "inactivity_threshold": 30,
+  "layout": {
+   "scaling_factor": 2.0
+  },
+  "mode": "objects",
+  "quality": 8,
+  "restream": false,
+  "width": 1280
+ },
+ "camera_groups": {},
+ "cameras": {
+  "garasi": {
+   "audio": {
+    "enabled": false,
+    "enabled_in_config": false,
+    "filters": {
+     "bark": {
+      "threshold": 0.8
+     },
+     "fire_alarm": {
+      "threshold": 0.8
+     },
+     "speech": {
+      "threshold": 0.8
+     },
+     "yell": {
+      "threshold": 0.8
+     }
+    },
+    "listen": [
+     "bark",
+     "fire_alarm",
+     "speech",
+     "yell"
+    ],
+    "max_not_heard": 30,
+    "min_volume": 500,
+    "num_threads": 2
+   },
+   "audio_transcription": {
+    "enabled": false,
+    "enabled_in_config": false,
+    "live_enabled": false
+   },
+   "best_image_timeout": 60,
+   "birdseye": {
+    "enabled": true,
+    "mode": "objects",
+    "order": 0
+   },
+   "detect": {
+    "annotation_offset": 0,
+    "enabled": false,
+    "fps": 5,
+    "height": 1440,
+    "max_disappeared": 25,
+    "min_initialized": 2,
+    "stationary": {
+     "classifier": true,
+     "interval": 50,
+     "max_frames": {
+      "objects": {}
+     },
+     "threshold": 50
+    },
+    "width": 2560
+   },
+   "enabled": true,
+   "enabled_in_config": true,
+   "face_recognition": {
+    "enabled": false,
+    "min_area": 750
+   },
+   "ffmpeg": {
+    "apple_compatibility": false,
+    "global_args": [
+     "-hide_banner",
+     "-loglevel",
+     "warning"
+    ],
+    "gpu": 0,
+    "hwaccel_args": "preset-vaapi",
+    "input_args": "preset-rtsp-generic",
+    "inputs": [
+     {
+      "global_args": [],
+      "hwaccel_args": [],
+      "input_args": [],
+      "path": "rtsp://127.0.0.1:8554/garasi_main",
+      "roles": [
+       "record",
+       "detect"
+      ]
+     }
+    ],
+    "output_args": {
+     "detect": [
+      "-threads",
+      "2",
+      "-f",
+      "rawvideo",
+      "-pix_fmt",
+      "yuv420p"
+     ],
+     "record": "-f segment -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -an"
+    },
+    "path": "default",
+    "retry_interval": 10.0
+   },
+   "ffmpeg_cmds": [
+    {
+     "cmd": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -hide_banner -loglevel warning -hwaccel_flags allow_profile_mismatch -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -user_agent FFmpeg Frigate/0.18.2-cfa08c5 -avoid_negative_ts make_zero -fflags +genpts+discardcorrupt -rtsp_transport tcp -timeout 10000000 -use_wallclock_as_timestamps 1 -i rtsp://127.0.0.1:8554/garasi_main -f segment -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -an /tmp/cache/garasi@%Y%m%d%H%M%S%z.mp4 -r 5 -vf fps=5,scale_vaapi=w=2560:h=1440,hwdownload,format=nv12 -threads 2 -f rawvideo -pix_fmt yuv420p pipe:",
+     "roles": [
+      "record",
+      "detect"
+     ]
+    }
+   ],
+   "live": {
+    "height": 720,
+    "quality": 8,
+    "streams": {
+     "garasi_sub": "garasi_sub"
+    }
+   },
+   "lpr": {
+    "enabled": false,
+    "enhancement": 0,
+    "expire_time": 3,
+    "min_area": 1000
+   },
+   "motion": {
+    "contour_area": 10,
+    "delta_alpha": 0.2,
+    "enabled": true,
+    "frame_alpha": 0.01,
+    "frame_height": 100,
+    "improve_contrast": true,
+    "lightning_threshold": 0.8,
+    "mask": {},
+    "mqtt_off_delay": 30,
+    "threshold": 30
+   },
+   "mqtt": {
+    "bounding_box": true,
+    "crop": true,
+    "enabled": true,
+    "height": 270,
+    "quality": 70,
+    "required_zones": [],
+    "timestamp": true
+   },
+   "name": "garasi",
+   "notifications": {
+    "cooldown": 0,
+    "enabled": false,
+    "enabled_in_config": false
+   },
+   "objects": {
+    "filters": {
+     "person": {
+      "mask": {},
+      "max_area": 24000000,
+      "max_ratio": 24000000.0,
+      "min_area": 0,
+      "min_ratio": 0.0,
+      "min_score": 0.5,
+      "threshold": 0.7
+     }
+    },
+    "genai": {
+     "debug_save_thumbnails": false,
+     "enabled": false,
+     "enabled_in_config": false,
+     "object_prompts": {},
+     "objects": [],
+     "prompt": "Analyze the sequence of images containing the {label}. Focus on the likely intent or behavior of the {label} based on its actions and movement, rather than describing its appearance or the surroundings. Consider what the {label} is doing, why, and what it might do next.",
+     "required_zones": [],
+     "send_triggers": {
+      "tracked_object_end": true
+     },
+     "use_snapshot": false
+    },
+    "mask": {},
+    "track": [
+     "person"
+    ]
+   },
+   "onvif": {
+    "autotracking": {
+     "calibrate_on_startup": false,
+     "enabled": false,
+     "enabled_in_config": false,
+     "movement_weights": [],
+     "required_zones": [],
+     "return_preset": "home",
+     "timeout": 10,
+     "track": [
+      "person"
+     ],
+     "zoom_factor": 0.3,
+     "zooming": "disabled"
+    },
+    "host": "",
+    "ignore_time_mismatch": false,
+    "port": 8000,
+    "tls_insecure": false
+   },
+   "profiles": {},
+   "record": {
+    "alerts": {
+     "post_capture": 5,
+     "pre_capture": 5,
+     "retain": {
+      "days": 14.0,
+      "mode": "all"
+     }
+    },
+    "continuous": {
+     "days": 0.0
+    },
+    "detections": {
+     "post_capture": 5,
+     "pre_capture": 5,
+     "retain": {
+      "days": 14.0,
+      "mode": "all"
+     }
+    },
+    "enabled": true,
+    "enabled_in_config": true,
+    "expire_interval": 60,
+    "export": {
+     "chapters": "review_items",
+     "hwaccel_args": "preset-vaapi",
+     "max_concurrent": 3
+    },
+    "motion": {
+     "days": 0.0
+    },
+    "preview": {
+     "quality": "medium"
+    }
+   },
+   "review": {
+    "alerts": {
+     "cutoff_time": 40,
+     "enabled": true,
+     "enabled_in_config": true,
+     "labels": [
+      "person",
+      "car"
+     ],
+     "required_zones": []
+    },
+    "detections": {
+     "cutoff_time": 30,
+     "enabled": true,
+     "enabled_in_config": true,
+     "required_zones": []
+    },
+    "genai": {
+     "activity_context_prompt": "### Normal Activity Indicators (Level 0)\n- Known/verified people in any zone at any time\n- People with pets in residential areas\n- Routine residential vehicle access during daytime/evening (6 AM - 10 PM): entering, exiting, loading/unloading items \u2014 normal commute and travel patterns\n- Deliveries or services during daytime/evening (6 AM - 10 PM): carrying packages to doors/porches, placing items, leaving\n- Services/maintenance workers with visible tools, uniforms, or service vehicles during daytime\n- Activity confined to public areas only (sidewalks, streets) without entering property at any time\n\n### Suspicious Activity Indicators (Level 1)\n- **Checking or probing vehicle/building access**: trying handles without entering, peering through windows, examining multiple vehicles, or possessing break-in tools \u2014 Level 1\n- **Unidentified person in private areas (driveways, near vehicles/buildings) during late night/early morning (11 PM - 5 AM)** \u2014 ALWAYS Level 1 regardless of activity or duration\n- Taking items that don't belong to them (packages, objects from porches/driveways)\n- Climbing or jumping fences/barriers to access property\n- Attempting to conceal actions or items from view\n- Prolonged loitering: remaining in same area without visible purpose throughout most of the sequence\n\n### Critical Threat Indicators (Level 2)\n- Holding break-in tools (crowbars, pry bars, bolt cutters)\n- Weapons visible (guns, knives, bats used aggressively)\n- Forced entry in progress\n- Physical aggression or violence\n- Active property damage or theft in progress\n\n### Assessment Guidance\nEvaluate in this order:\n\n1. **If person is verified/known** \u2192 Level 0 regardless of time or activity\n2. **If person is unidentified:**\n   - Check time: If late night/early morning (11 PM - 5 AM) AND in private areas (driveways, near vehicles/buildings) \u2192 Level 1\n   - Check actions: If probing access (trying handles without entering, checking multiple vehicles), taking items, climbing \u2192 Level 1\n   - Otherwise, if daytime/evening (6 AM - 10 PM) with clear legitimate purpose (delivery, service, routine vehicle access) \u2192 Level 0\n3. **Escalate to Level 2 if:** Weapons, break-in tools, forced entry in progress, violence, or active property damage visible (escalates from Level 0 or 1)\n\nThe mere presence of an unidentified person in private areas during late night hours is inherently suspicious and warrants human review, regardless of what activity they appear to be doing or how brief the sequence is.",
+     "additional_concerns": [],
+     "alerts": true,
+     "debug_save_thumbnails": false,
+     "detections": false,
+     "enabled": false,
+     "enabled_in_config": false,
+     "image_source": "preview"
+    }
+   },
+   "semantic_search": {
+    "triggers": {}
+   },
+   "snapshots": {
+    "bounding_box": true,
+    "crop": false,
+    "enabled": false,
+    "quality": 60,
+    "required_zones": [],
+    "retain": {
+     "default": 10.0,
+     "objects": {}
+    },
+    "timestamp": false
+   },
+   "timestamp_style": {
+    "color": {
+     "blue": 255,
+     "green": 255,
+     "red": 255
+    },
+    "format": "%m/%d/%Y %H:%M:%S",
+    "position": "tl",
+    "thickness": 2
+   },
+   "type": "generic",
+   "ui": {
+    "dashboard": true,
+    "order": 0,
+    "review": true
+   },
+   "zones": {}
+  },
+  "halaman": {
+   "audio": {
+    "enabled": false,
+    "enabled_in_config": false,
+    "filters": {
+     "bark": {
+      "threshold": 0.8
+     },
+     "fire_alarm": {
+      "threshold": 0.8
+     },
+     "speech": {
+      "threshold": 0.8
+     },
+     "yell": {
+      "threshold": 0.8
+     }
+    },
+    "listen": [
+     "bark",
+     "fire_alarm",
+     "speech",
+     "yell"
+    ],
+    "max_not_heard": 30,
+    "min_volume": 500,
+    "num_threads": 2
+   },
+   "audio_transcription": {
+    "enabled": false,
+    "enabled_in_config": false,
+    "live_enabled": false
+   },
+   "best_image_timeout": 60,
+   "birdseye": {
+    "enabled": true,
+    "mode": "objects",
+    "order": 0
+   },
+   "detect": {
+    "annotation_offset": 0,
+    "enabled": false,
+    "fps": 5,
+    "height": 1440,
+    "max_disappeared": 25,
+    "min_initialized": 2,
+    "stationary": {
+     "classifier": true,
+     "interval": 50,
+     "max_frames": {
+      "objects": {}
+     },
+     "threshold": 50
+    },
+    "width": 2560
+   },
+   "enabled": true,
+   "enabled_in_config": true,
+   "face_recognition": {
+    "enabled": false,
+    "min_area": 750
+   },
+   "ffmpeg": {
+    "apple_compatibility": false,
+    "global_args": [
+     "-hide_banner",
+     "-loglevel",
+     "warning"
+    ],
+    "gpu": 0,
+    "hwaccel_args": "preset-vaapi",
+    "input_args": "preset-rtsp-generic",
+    "inputs": [
+     {
+      "global_args": [],
+      "hwaccel_args": [],
+      "input_args": [],
+      "path": "rtsp://127.0.0.1:8554/halaman_main",
+      "roles": [
+       "record",
+       "detect"
+      ]
+     }
+    ],
+    "output_args": {
+     "detect": [
+      "-threads",
+      "2",
+      "-f",
+      "rawvideo",
+      "-pix_fmt",
+      "yuv420p"
+     ],
+     "record": "-f segment -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -an"
+    },
+    "path": "default",
+    "retry_interval": 10.0
+   },
+   "ffmpeg_cmds": [
+    {
+     "cmd": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -hide_banner -loglevel warning -hwaccel_flags allow_profile_mismatch -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -user_agent FFmpeg Frigate/0.18.2-cfa08c5 -avoid_negative_ts make_zero -fflags +genpts+discardcorrupt -rtsp_transport tcp -timeout 10000000 -use_wallclock_as_timestamps 1 -i rtsp://127.0.0.1:8554/halaman_main -f segment -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -an /tmp/cache/halaman@%Y%m%d%H%M%S%z.mp4 -r 5 -vf fps=5,scale_vaapi=w=2560:h=1440,hwdownload,format=nv12 -threads 2 -f rawvideo -pix_fmt yuv420p pipe:",
+     "roles": [
+      "record",
+      "detect"
+     ]
+    }
+   ],
+   "live": {
+    "height": 720,
+    "quality": 8,
+    "streams": {
+     "halaman_sub": "halaman_sub"
+    }
+   },
+   "lpr": {
+    "enabled": false,
+    "enhancement": 0,
+    "expire_time": 3,
+    "min_area": 1000
+   },
+   "motion": {
+    "contour_area": 10,
+    "delta_alpha": 0.2,
+    "enabled": true,
+    "frame_alpha": 0.01,
+    "frame_height": 100,
+    "improve_contrast": true,
+    "lightning_threshold": 0.8,
+    "mask": {},
+    "mqtt_off_delay": 30,
+    "threshold": 30
+   },
+   "mqtt": {
+    "bounding_box": true,
+    "crop": true,
+    "enabled": true,
+    "height": 270,
+    "quality": 70,
+    "required_zones": [],
+    "timestamp": true
+   },
+   "name": "halaman",
+   "notifications": {
+    "cooldown": 0,
+    "enabled": false,
+    "enabled_in_config": false
+   },
+   "objects": {
+    "filters": {
+     "person": {
+      "mask": {},
+      "max_area": 24000000,
+      "max_ratio": 24000000.0,
+      "min_area": 0,
+      "min_ratio": 0.0,
+      "min_score": 0.5,
+      "threshold": 0.7
+     }
+    },
+    "genai": {
+     "debug_save_thumbnails": false,
+     "enabled": false,
+     "enabled_in_config": false,
+     "object_prompts": {},
+     "objects": [],
+     "prompt": "Analyze the sequence of images containing the {label}. Focus on the likely intent or behavior of the {label} based on its actions and movement, rather than describing its appearance or the surroundings. Consider what the {label} is doing, why, and what it might do next.",
+     "required_zones": [],
+     "send_triggers": {
+      "tracked_object_end": true
+     },
+     "use_snapshot": false
+    },
+    "mask": {},
+    "track": [
+     "person"
+    ]
+   },
+   "onvif": {
+    "autotracking": {
+     "calibrate_on_startup": false,
+     "enabled": false,
+     "enabled_in_config": false,
+     "movement_weights": [],
+     "required_zones": [],
+     "return_preset": "home",
+     "timeout": 10,
+     "track": [
+      "person"
+     ],
+     "zoom_factor": 0.3,
+     "zooming": "disabled"
+    },
+    "host": "",
+    "ignore_time_mismatch": false,
+    "port": 8000,
+    "tls_insecure": false
+   },
+   "profiles": {},
+   "record": {
+    "alerts": {
+     "post_capture": 5,
+     "pre_capture": 5,
+     "retain": {
+      "days": 14.0,
+      "mode": "all"
+     }
+    },
+    "continuous": {
+     "days": 0.0
+    },
+    "detections": {
+     "post_capture": 5,
+     "pre_capture": 5,
+     "retain": {
+      "days": 14.0,
+      "mode": "all"
+     }
+    },
+    "enabled": true,
+    "enabled_in_config": true,
+    "expire_interval": 60,
+    "export": {
+     "chapters": "review_items",
+     "hwaccel_args": "preset-vaapi",
+     "max_concurrent": 3
+    },
+    "motion": {
+     "days": 0.0
+    },
+    "preview": {
+     "quality": "medium"
+    }
+   },
+   "review": {
+    "alerts": {
+     "cutoff_time": 40,
+     "enabled": true,
+     "enabled_in_config": true,
+     "labels": [
+      "person",
+      "car"
+     ],
+     "required_zones": []
+    },
+    "detections": {
+     "cutoff_time": 30,
+     "enabled": true,
+     "enabled_in_config": true,
+     "required_zones": []
+    },
+    "genai": {
+     "activity_context_prompt": "### Normal Activity Indicators (Level 0)\n- Known/verified people in any zone at any time\n- People with pets in residential areas\n- Routine residential vehicle access during daytime/evening (6 AM - 10 PM): entering, exiting, loading/unloading items \u2014 normal commute and travel patterns\n- Deliveries or services during daytime/evening (6 AM - 10 PM): carrying packages to doors/porches, placing items, leaving\n- Services/maintenance workers with visible tools, uniforms, or service vehicles during daytime\n- Activity confined to public areas only (sidewalks, streets) without entering property at any time\n\n### Suspicious Activity Indicators (Level 1)\n- **Checking or probing vehicle/building access**: trying handles without entering, peering through windows, examining multiple vehicles, or possessing break-in tools \u2014 Level 1\n- **Unidentified person in private areas (driveways, near vehicles/buildings) during late night/early morning (11 PM - 5 AM)** \u2014 ALWAYS Level 1 regardless of activity or duration\n- Taking items that don't belong to them (packages, objects from porches/driveways)\n- Climbing or jumping fences/barriers to access property\n- Attempting to conceal actions or items from view\n- Prolonged loitering: remaining in same area without visible purpose throughout most of the sequence\n\n### Critical Threat Indicators (Level 2)\n- Holding break-in tools (crowbars, pry bars, bolt cutters)\n- Weapons visible (guns, knives, bats used aggressively)\n- Forced entry in progress\n- Physical aggression or violence\n- Active property damage or theft in progress\n\n### Assessment Guidance\nEvaluate in this order:\n\n1. **If person is verified/known** \u2192 Level 0 regardless of time or activity\n2. **If person is unidentified:**\n   - Check time: If late night/early morning (11 PM - 5 AM) AND in private areas (driveways, near vehicles/buildings) \u2192 Level 1\n   - Check actions: If probing access (trying handles without entering, checking multiple vehicles), taking items, climbing \u2192 Level 1\n   - Otherwise, if daytime/evening (6 AM - 10 PM) with clear legitimate purpose (delivery, service, routine vehicle access) \u2192 Level 0\n3. **Escalate to Level 2 if:** Weapons, break-in tools, forced entry in progress, violence, or active property damage visible (escalates from Level 0 or 1)\n\nThe mere presence of an unidentified person in private areas during late night hours is inherently suspicious and warrants human review, regardless of what activity they appear to be doing or how brief the sequence is.",
+     "additional_concerns": [],
+     "alerts": true,
+     "debug_save_thumbnails": false,
+     "detections": false,
+     "enabled": false,
+     "enabled_in_config": false,
+     "image_source": "preview"
+    }
+   },
+   "semantic_search": {
+    "triggers": {}
+   },
+   "snapshots": {
+    "bounding_box": true,
+    "crop": false,
+    "enabled": false,
+    "quality": 60,
+    "required_zones": [],
+    "retain": {
+     "default": 10.0,
+     "objects": {}
+    },
+    "timestamp": false
+   },
+   "timestamp_style": {
+    "color": {
+     "blue": 255,
+     "green": 255,
+     "red": 255
+    },
+    "format": "%m/%d/%Y %H:%M:%S",
+    "position": "tl",
+    "thickness": 2
+   },
+   "type": "generic",
+   "ui": {
+    "dashboard": true,
+    "order": 0,
+    "review": true
+   },
+   "zones": {}
+  },
+  "ruang_belakang": {
+   "audio": {
+    "enabled": false,
+    "enabled_in_config": false,
+    "filters": {
+     "bark": {
+      "threshold": 0.8
+     },
+     "fire_alarm": {
+      "threshold": 0.8
+     },
+     "speech": {
+      "threshold": 0.8
+     },
+     "yell": {
+      "threshold": 0.8
+     }
+    },
+    "listen": [
+     "bark",
+     "fire_alarm",
+     "speech",
+     "yell"
+    ],
+    "max_not_heard": 30,
+    "min_volume": 500,
+    "num_threads": 2
+   },
+   "audio_transcription": {
+    "enabled": false,
+    "enabled_in_config": false,
+    "live_enabled": false
+   },
+   "best_image_timeout": 60,
+   "birdseye": {
+    "enabled": true,
+    "mode": "objects",
+    "order": 0
+   },
+   "detect": {
+    "annotation_offset": 0,
+    "enabled": false,
+    "fps": 5,
+    "height": 1080,
+    "max_disappeared": 25,
+    "min_initialized": 2,
+    "stationary": {
+     "classifier": true,
+     "interval": 50,
+     "max_frames": {
+      "objects": {}
+     },
+     "threshold": 50
+    },
+    "width": 1920
+   },
+   "enabled": true,
+   "enabled_in_config": true,
+   "face_recognition": {
+    "enabled": false,
+    "min_area": 750
+   },
+   "ffmpeg": {
+    "apple_compatibility": false,
+    "global_args": [
+     "-hide_banner",
+     "-loglevel",
+     "warning"
+    ],
+    "gpu": 0,
+    "hwaccel_args": "preset-vaapi",
+    "input_args": "preset-rtsp-generic",
+    "inputs": [
+     {
+      "global_args": [],
+      "hwaccel_args": [],
+      "input_args": [],
+      "path": "rtsp://127.0.0.1:8554/ruang_belakang_main",
+      "roles": [
+       "record",
+       "detect"
+      ]
+     }
+    ],
+    "output_args": {
+     "detect": [
+      "-threads",
+      "2",
+      "-f",
+      "rawvideo",
+      "-pix_fmt",
+      "yuv420p"
+     ],
+     "record": "-f segment -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -an"
+    },
+    "path": "default",
+    "retry_interval": 10.0
+   },
+   "ffmpeg_cmds": [
+    {
+     "cmd": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -hide_banner -loglevel warning -hwaccel_flags allow_profile_mismatch -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -user_agent FFmpeg Frigate/0.18.2-cfa08c5 -avoid_negative_ts make_zero -fflags +genpts+discardcorrupt -rtsp_transport tcp -timeout 10000000 -use_wallclock_as_timestamps 1 -i rtsp://127.0.0.1:8554/ruang_belakang_main -f segment -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -an /tmp/cache/ruang_belakang@%Y%m%d%H%M%S%z.mp4 -r 5 -vf fps=5,scale_vaapi=w=1920:h=1080,hwdownload,format=nv12 -threads 2 -f rawvideo -pix_fmt yuv420p pipe:",
+     "roles": [
+      "record",
+      "detect"
+     ]
+    }
+   ],
+   "live": {
+    "height": 720,
+    "quality": 8,
+    "streams": {
+     "ruang_belakang_sub": "ruang_belakang_sub"
+    }
+   },
+   "lpr": {
+    "enabled": false,
+    "enhancement": 0,
+    "expire_time": 3,
+    "min_area": 1000
+   },
+   "motion": {
+    "contour_area": 10,
+    "delta_alpha": 0.2,
+    "enabled": true,
+    "frame_alpha": 0.01,
+    "frame_height": 100,
+    "improve_contrast": true,
+    "lightning_threshold": 0.8,
+    "mask": {},
+    "mqtt_off_delay": 30,
+    "threshold": 30
+   },
+   "mqtt": {
+    "bounding_box": true,
+    "crop": true,
+    "enabled": true,
+    "height": 270,
+    "quality": 70,
+    "required_zones": [],
+    "timestamp": true
+   },
+   "name": "ruang_belakang",
+   "notifications": {
+    "cooldown": 0,
+    "enabled": false,
+    "enabled_in_config": false
+   },
+   "objects": {
+    "filters": {
+     "person": {
+      "mask": {},
+      "max_area": 24000000,
+      "max_ratio": 24000000.0,
+      "min_area": 0,
+      "min_ratio": 0.0,
+      "min_score": 0.5,
+      "threshold": 0.7
+     }
+    },
+    "genai": {
+     "debug_save_thumbnails": false,
+     "enabled": false,
+     "enabled_in_config": false,
+     "object_prompts": {},
+     "objects": [],
+     "prompt": "Analyze the sequence of images containing the {label}. Focus on the likely intent or behavior of the {label} based on its actions and movement, rather than describing its appearance or the surroundings. Consider what the {label} is doing, why, and what it might do next.",
+     "required_zones": [],
+     "send_triggers": {
+      "tracked_object_end": true
+     },
+     "use_snapshot": false
+    },
+    "mask": {},
+    "track": [
+     "person"
+    ]
+   },
+   "onvif": {
+    "autotracking": {
+     "calibrate_on_startup": false,
+     "enabled": false,
+     "enabled_in_config": false,
+     "movement_weights": [],
+     "required_zones": [],
+     "return_preset": "home",
+     "timeout": 10,
+     "track": [
+      "person"
+     ],
+     "zoom_factor": 0.3,
+     "zooming": "disabled"
+    },
+    "host": "",
+    "ignore_time_mismatch": false,
+    "port": 8000,
+    "tls_insecure": false
+   },
+   "profiles": {},
+   "record": {
+    "alerts": {
+     "post_capture": 5,
+     "pre_capture": 5,
+     "retain": {
+      "days": 14.0,
+      "mode": "all"
+     }
+    },
+    "continuous": {
+     "days": 0.0
+    },
+    "detections": {
+     "post_capture": 5,
+     "pre_capture": 5,
+     "retain": {
+      "days": 14.0,
+      "mode": "all"
+     }
+    },
+    "enabled": true,
+    "enabled_in_config": true,
+    "expire_interval": 60,
+    "export": {
+     "chapters": "review_items",
+     "hwaccel_args": "preset-vaapi",
+     "max_concurrent": 3
+    },
+    "motion": {
+     "days": 0.0
+    },
+    "preview": {
+     "quality": "medium"
+    }
+   },
+   "review": {
+    "alerts": {
+     "cutoff_time": 40,
+     "enabled": true,
+     "enabled_in_config": true,
+     "labels": [
+      "person",
+      "car"
+     ],
+     "required_zones": []
+    },
+    "detections": {
+     "cutoff_time": 30,
+     "enabled": true,
+     "enabled_in_config": true,
+     "required_zones": []
+    },
+    "genai": {
+     "activity_context_prompt": "### Normal Activity Indicators (Level 0)\n- Known/verified people in any zone at any time\n- People with pets in residential areas\n- Routine residential vehicle access during daytime/evening (6 AM - 10 PM): entering, exiting, loading/unloading items \u2014 normal commute and travel patterns\n- Deliveries or services during daytime/evening (6 AM - 10 PM): carrying packages to doors/porches, placing items, leaving\n- Services/maintenance workers with visible tools, uniforms, or service vehicles during daytime\n- Activity confined to public areas only (sidewalks, streets) without entering property at any time\n\n### Suspicious Activity Indicators (Level 1)\n- **Checking or probing vehicle/building access**: trying handles without entering, peering through windows, examining multiple vehicles, or possessing break-in tools \u2014 Level 1\n- **Unidentified person in private areas (driveways, near vehicles/buildings) during late night/early morning (11 PM - 5 AM)** \u2014 ALWAYS Level 1 regardless of activity or duration\n- Taking items that don't belong to them (packages, objects from porches/driveways)\n- Climbing or jumping fences/barriers to access property\n- Attempting to conceal actions or items from view\n- Prolonged loitering: remaining in same area without visible purpose throughout most of the sequence\n\n### Critical Threat Indicators (Level 2)\n- Holding break-in tools (crowbars, pry bars, bolt cutters)\n- Weapons visible (guns, knives, bats used aggressively)\n- Forced entry in progress\n- Physical aggression or violence\n- Active property damage or theft in progress\n\n### Assessment Guidance\nEvaluate in this order:\n\n1. **If person is verified/known** \u2192 Level 0 regardless of time or activity\n2. **If person is unidentified:**\n   - Check time: If late night/early morning (11 PM - 5 AM) AND in private areas (driveways, near vehicles/buildings) \u2192 Level 1\n   - Check actions: If probing access (trying handles without entering, checking multiple vehicles), taking items, climbing \u2192 Level 1\n   - Otherwise, if daytime/evening (6 AM - 10 PM) with clear legitimate purpose (delivery, service, routine vehicle access) \u2192 Level 0\n3. **Escalate to Level 2 if:** Weapons, break-in tools, forced entry in progress, violence, or active property damage visible (escalates from Level 0 or 1)\n\nThe mere presence of an unidentified person in private areas during late night hours is inherently suspicious and warrants human review, regardless of what activity they appear to be doing or how brief the sequence is.",
+     "additional_concerns": [],
+     "alerts": true,
+     "debug_save_thumbnails": false,
+     "detections": false,
+     "enabled": false,
+     "enabled_in_config": false,
+     "image_source": "preview"
+    }
+   },
+   "semantic_search": {
+    "triggers": {}
+   },
+   "snapshots": {
+    "bounding_box": true,
+    "crop": false,
+    "enabled": false,
+    "quality": 60,
+    "required_zones": [],
+    "retain": {
+     "default": 10.0,
+     "objects": {}
+    },
+    "timestamp": false
+   },
+   "timestamp_style": {
+    "color": {
+     "blue": 255,
+     "green": 255,
+     "red": 255
+    },
+    "format": "%m/%d/%Y %H:%M:%S",
+    "position": "tl",
+    "thickness": 2
+   },
+   "type": "generic",
+   "ui": {
+    "dashboard": true,
+    "order": 0,
+    "review": true
+   },
+   "zones": {}
+  },
+  "ruang_tengah": {
+   "audio": {
+    "enabled": false,
+    "enabled_in_config": false,
+    "filters": {
+     "bark": {
+      "threshold": 0.8
+     },
+     "fire_alarm": {
+      "threshold": 0.8
+     },
+     "speech": {
+      "threshold": 0.8
+     },
+     "yell": {
+      "threshold": 0.8
+     }
+    },
+    "listen": [
+     "bark",
+     "fire_alarm",
+     "speech",
+     "yell"
+    ],
+    "max_not_heard": 30,
+    "min_volume": 500,
+    "num_threads": 2
+   },
+   "audio_transcription": {
+    "enabled": false,
+    "enabled_in_config": false,
+    "live_enabled": false
+   },
+   "best_image_timeout": 60,
+   "birdseye": {
+    "enabled": true,
+    "mode": "objects",
+    "order": 0
+   },
+   "detect": {
+    "annotation_offset": 0,
+    "enabled": false,
+    "fps": 5,
+    "height": 1080,
+    "max_disappeared": 25,
+    "min_initialized": 2,
+    "stationary": {
+     "classifier": true,
+     "interval": 50,
+     "max_frames": {
+      "objects": {}
+     },
+     "threshold": 50
+    },
+    "width": 1920
+   },
+   "enabled": true,
+   "enabled_in_config": true,
+   "face_recognition": {
+    "enabled": false,
+    "min_area": 750
+   },
+   "ffmpeg": {
+    "apple_compatibility": false,
+    "global_args": [
+     "-hide_banner",
+     "-loglevel",
+     "warning"
+    ],
+    "gpu": 0,
+    "hwaccel_args": "preset-vaapi",
+    "input_args": "preset-rtsp-generic",
+    "inputs": [
+     {
+      "global_args": [],
+      "hwaccel_args": [],
+      "input_args": [],
+      "path": "rtsp://127.0.0.1:8554/ruang_tengah_main",
+      "roles": [
+       "record",
+       "detect"
+      ]
+     }
+    ],
+    "output_args": {
+     "detect": [
+      "-threads",
+      "2",
+      "-f",
+      "rawvideo",
+      "-pix_fmt",
+      "yuv420p"
+     ],
+     "record": "-f segment -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -an"
+    },
+    "path": "default",
+    "retry_interval": 10.0
+   },
+   "ffmpeg_cmds": [
+    {
+     "cmd": "/usr/lib/ffmpeg/8.0/bin/ffmpeg -hide_banner -loglevel warning -hwaccel_flags allow_profile_mismatch -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi -user_agent FFmpeg Frigate/0.18.2-cfa08c5 -avoid_negative_ts make_zero -fflags +genpts+discardcorrupt -rtsp_transport tcp -timeout 10000000 -use_wallclock_as_timestamps 1 -i rtsp://127.0.0.1:8554/ruang_tengah_main -f segment -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -an /tmp/cache/ruang_tengah@%Y%m%d%H%M%S%z.mp4 -r 5 -vf fps=5,scale_vaapi=w=1920:h=1080,hwdownload,format=nv12 -threads 2 -f rawvideo -pix_fmt yuv420p pipe:",
+     "roles": [
+      "record",
+      "detect"
+     ]
+    }
+   ],
+   "live": {
+    "height": 720,
+    "quality": 8,
+    "streams": {
+     "ruang_tengah_sub": "ruang_tengah_sub"
+    }
+   },
+   "lpr": {
+    "enabled": false,
+    "enhancement": 0,
+    "expire_time": 3,
+    "min_area": 1000
+   },
+   "motion": {
+    "contour_area": 10,
+    "delta_alpha": 0.2,
+    "enabled": true,
+    "frame_alpha": 0.01,
+    "frame_height": 100,
+    "improve_contrast": true,
+    "lightning_threshold": 0.8,
+    "mask": {},
+    "mqtt_off_delay": 30,
+    "threshold": 30
+   },
+   "mqtt": {
+    "bounding_box": true,
+    "crop": true,
+    "enabled": true,
+    "height": 270,
+    "quality": 70,
+    "required_zones": [],
+    "timestamp": true
+   },
+   "name": "ruang_tengah",
+   "notifications": {
+    "cooldown": 0,
+    "enabled": false,
+    "enabled_in_config": false
+   },
+   "objects": {
+    "filters": {
+     "person": {
+      "mask": {},
+      "max_area": 24000000,
+      "max_ratio": 24000000.0,
+      "min_area": 0,
+      "min_ratio": 0.0,
+      "min_score": 0.5,
+      "threshold": 0.7
+     }
+    },
+    "genai": {
+     "debug_save_thumbnails": false,
+     "enabled": false,
+     "enabled_in_config": false,
+     "object_prompts": {},
+     "objects": [],
+     "prompt": "Analyze the sequence of images containing the {label}. Focus on the likely intent or behavior of the {label} based on its actions and movement, rather than describing its appearance or the surroundings. Consider what the {label} is doing, why, and what it might do next.",
+     "required_zones": [],
+     "send_triggers": {
+      "tracked_object_end": true
+     },
+     "use_snapshot": false
+    },
+    "mask": {},
+    "track": [
+     "person"
+    ]
+   },
+   "onvif": {
+    "autotracking": {
+     "calibrate_on_startup": false,
+     "enabled": false,
+     "enabled_in_config": false,
+     "movement_weights": [],
+     "required_zones": [],
+     "return_preset": "home",
+     "timeout": 10,
+     "track": [
+      "person"
+     ],
+     "zoom_factor": 0.3,
+     "zooming": "disabled"
+    },
+    "host": "",
+    "ignore_time_mismatch": false,
+    "port": 8000,
+    "tls_insecure": false
+   },
+   "profiles": {},
+   "record": {
+    "alerts": {
+     "post_capture": 5,
+     "pre_capture": 5,
+     "retain": {
+      "days": 14.0,
+      "mode": "all"
+     }
+    },
+    "continuous": {
+     "days": 0.0
+    },
+    "detections": {
+     "post_capture": 5,
+     "pre_capture": 5,
+     "retain": {
+      "days": 14.0,
+      "mode": "all"
+     }
+    },
+    "enabled": true,
+    "enabled_in_config": true,
+    "expire_interval": 60,
+    "export": {
+     "chapters": "review_items",
+     "hwaccel_args": "preset-vaapi",
+     "max_concurrent": 3
+    },
+    "motion": {
+     "days": 0.0
+    },
+    "preview": {
+     "quality": "medium"
+    }
+   },
+   "review": {
+    "alerts": {
+     "cutoff_time": 40,
+     "enabled": true,
+     "enabled_in_config": true,
+     "labels": [
+      "person",
+      "car"
+     ],
+     "required_zones": []
+    },
+    "detections": {
+     "cutoff_time": 30,
+     "enabled": true,
+     "enabled_in_config": true,
+     "required_zones": []
+    },
+    "genai": {
+     "activity_context_prompt": "### Normal Activity Indicators (Level 0)\n- Known/verified people in any zone at any time\n- People with pets in residential areas\n- Routine residential vehicle access during daytime/evening (6 AM - 10 PM): entering, exiting, loading/unloading items \u2014 normal commute and travel patterns\n- Deliveries or services during daytime/evening (6 AM - 10 PM): carrying packages to doors/porches, placing items, leaving\n- Services/maintenance workers with visible tools, uniforms, or service vehicles during daytime\n- Activity confined to public areas only (sidewalks, streets) without entering property at any time\n\n### Suspicious Activity Indicators (Level 1)\n- **Checking or probing vehicle/building access**: trying handles without entering, peering through windows, examining multiple vehicles, or possessing break-in tools \u2014 Level 1\n- **Unidentified person in private areas (driveways, near vehicles/buildings) during late night/early morning (11 PM - 5 AM)** \u2014 ALWAYS Level 1 regardless of activity or duration\n- Taking items that don't belong to them (packages, objects from porches/driveways)\n- Climbing or jumping fences/barriers to access property\n- Attempting to conceal actions or items from view\n- Prolonged loitering: remaining in same area without visible purpose throughout most of the sequence\n\n### Critical Threat Indicators (Level 2)\n- Holding break-in tools (crowbars, pry bars, bolt cutters)\n- Weapons visible (guns, knives, bats used aggressively)\n- Forced entry in progress\n- Physical aggression or violence\n- Active property damage or theft in progress\n\n### Assessment Guidance\nEvaluate in this order:\n\n1. **If person is verified/known** \u2192 Level 0 regardless of time or activity\n2. **If person is unidentified:**\n   - Check time: If late night/early morning (11 PM - 5 AM) AND in private areas (driveways, near vehicles/buildings) \u2192 Level 1\n   - Check actions: If probing access (trying handles without entering, checking multiple vehicles), taking items, climbing \u2192 Level 1\n   - Otherwise, if daytime/evening (6 AM - 10 PM) with clear legitimate purpose (delivery, service, routine vehicle access) \u2192 Level 0\n3. **Escalate to Level 2 if:** Weapons, break-in tools, forced entry in progress, violence, or active property damage visible (escalates from Level 0 or 1)\n\nThe mere presence of an unidentified person in private areas during late night hours is inherently suspicious and warrants human review, regardless of what activity they appear to be doing or how brief the sequence is.",
+     "additional_concerns": [],
+     "alerts": true,
+     "debug_save_thumbnails": false,
+     "detections": false,
+     "enabled": false,
+     "enabled_in_config": false,
+     "image_source": "preview"
+    }
+   },
+   "semantic_search": {
+    "triggers": {}
+   },
+   "snapshots": {
+    "bounding_box": true,
+    "crop": false,
+    "enabled": false,
+    "quality": 60,
+    "required_zones": [],
+    "retain": {
+     "default": 10.0,
+     "objects": {}
+    },
+    "timestamp": false
+   },
+   "timestamp_style": {
+    "color": {
+     "blue": 255,
+     "green": 255,
+     "red": 255
+    },
+    "format": "%m/%d/%Y %H:%M:%S",
+    "position": "tl",
+    "thickness": 2
+   },
+   "type": "generic",
+   "ui": {
+    "dashboard": true,
+    "order": 0,
+    "review": true
+   },
+   "zones": {}
+  }
+ },
+ "classification": {
+  "bird": {
+   "enabled": false,
+   "threshold": 0.9
+  },
+  "custom": {}
+ },
+ "database": {
+  "path": "/config/frigate.db"
+ },
+ "detect": {
+  "annotation_offset": 0,
+  "enabled": false,
+  "fps": 5,
+  "stationary": {
+   "classifier": true,
+   "max_frames": {
+    "objects": {}
+   }
+  }
+ },
+ "detectors": {
+  "dummy": {
+   "model": {
+    "attributes_map": {
+     "bus": [
+      "license_plate"
+     ],
+     "car": [
+      "amazon",
+      "an_post",
+      "canada_post",
+      "dhl",
+      "dpd",
+      "fedex",
+      "gls",
+      "license_plate",
+      "nzpost",
+      "postnl",
+      "postnord",
+      "purolator",
+      "royal_mail",
+      "ups",
+      "usps"
+     ],
+     "garbage_truck": [
+      "license_plate"
+     ],
+     "motorcycle": [
+      "license_plate"
+     ],
+     "person": [
+      "amazon",
+      "face"
+     ],
+     "school_bus": [
+      "license_plate"
+     ],
+     "truck": [
+      "license_plate"
+     ]
+    },
+    "height": 320,
+    "input_dtype": "int",
+    "input_pixel_format": "rgb",
+    "input_tensor": "nhwc",
+    "labelmap": {
+     "0": "person",
+     "1": "bicycle",
+     "10": "fire hydrant",
+     "11": "street sign",
+     "12": "stop sign",
+     "13": "parking meter",
+     "14": "bench",
+     "15": "bird",
+     "16": "cat",
+     "17": "dog",
+     "18": "horse",
+     "19": "sheep",
+     "2": "car",
+     "20": "cow",
+     "21": "elephant",
+     "22": "bear",
+     "23": "zebra",
+     "24": "giraffe",
+     "25": "hat",
+     "26": "backpack",
+     "27": "umbrella",
+     "28": "shoe",
+     "29": "eye glasses",
+     "3": "motorcycle",
+     "30": "handbag",
+     "31": "tie",
+     "32": "suitcase",
+     "33": "frisbee",
+     "34": "skis",
+     "35": "snowboard",
+     "36": "sports ball",
+     "37": "kite",
+     "38": "baseball bat",
+     "39": "baseball glove",
+     "4": "airplane",
+     "40": "skateboard",
+     "41": "surfboard",
+     "42": "tennis racket",
+     "43": "bottle",
+     "44": "plate",
+     "45": "wine glass",
+     "46": "cup",
+     "47": "fork",
+     "48": "knife",
+     "49": "spoon",
+     "5": "bus",
+     "50": "bowl",
+     "51": "banana",
+     "52": "apple",
+     "53": "sandwich",
+     "54": "orange",
+     "55": "broccoli",
+     "56": "carrot",
+     "57": "hot dog",
+     "58": "pizza",
+     "59": "donut",
+     "6": "train",
+     "60": "cake",
+     "61": "chair",
+     "62": "couch",
+     "63": "potted plant",
+     "64": "bed",
+     "65": "mirror",
+     "66": "dining table",
+     "67": "window",
+     "68": "desk",
+     "69": "toilet",
+     "7": "car",
+     "70": "door",
+     "71": "tv",
+     "72": "laptop",
+     "73": "mouse",
+     "74": "remote",
+     "75": "keyboard",
+     "76": "cell phone",
+     "77": "microwave",
+     "78": "oven",
+     "79": "toaster",
+     "8": "boat",
+     "80": "sink",
+     "81": "refrigerator",
+     "82": "blender",
+     "83": "book",
+     "84": "clock",
+     "85": "vase",
+     "86": "scissors",
+     "87": "teddy bear",
+     "88": "hair drier",
+     "89": "toothbrush",
+     "9": "traffic light",
+     "90": "hair brush"
+    },
+    "model_type": "ssd",
+    "path": "/cpu_model.tflite",
+    "width": 320
+   },
+   "num_threads": 1,
+   "type": "cpu"
+  }
+ },
+ "environment_vars": {},
+ "face_recognition": {
+  "blur_confidence_filter": true,
+  "detection_threshold": 0.7,
+  "enabled": false,
+  "min_area": 750,
+  "min_faces": 1,
+  "model_size": "small",
+  "recognition_threshold": 0.9,
+  "save_attempts": 200,
+  "unknown_score": 0.8
+ },
+ "ffmpeg": {
+  "apple_compatibility": false,
+  "global_args": [
+   "-hide_banner",
+   "-loglevel",
+   "warning"
+  ],
+  "gpu": 0,
+  "hwaccel_args": "preset-vaapi",
+  "input_args": "preset-rtsp-generic",
+  "output_args": {
+   "detect": [
+    "-threads",
+    "2",
+    "-f",
+    "rawvideo",
+    "-pix_fmt",
+    "yuv420p"
+   ],
+   "record": "preset-record-generic-audio-copy"
+  },
+  "path": "default",
+  "retry_interval": 10.0
+ },
+ "genai": {},
+ "go2rtc": {
+  "streams": {
+   "garasi_main": [
+    "rtsp://redacted.invalid/garasi_main"
+   ],
+   "garasi_sub": [
+    "rtsp://redacted.invalid/garasi_sub"
+   ],
+   "halaman_main": [
+    "rtsp://redacted.invalid/halaman_main"
+   ],
+   "halaman_sub": [
+    "rtsp://redacted.invalid/halaman_sub"
+   ],
+   "ruang_belakang_main": [
+    "rtsp://redacted.invalid/ruang_belakang_main"
+   ],
+   "ruang_belakang_sub": [
+    "rtsp://redacted.invalid/ruang_belakang_sub"
+   ],
+   "ruang_tengah_main": [
+    "rtsp://redacted.invalid/ruang_tengah_main"
+   ],
+   "ruang_tengah_sub": [
+    "rtsp://redacted.invalid/ruang_tengah_sub"
+   ]
+  }
+ },
+ "live": {
+  "height": 720,
+  "quality": 8,
+  "streams": []
+ },
+ "logger": {
+  "default": "info",
+  "logs": {}
+ },
+ "lpr": {
+  "debug_save_plates": false,
+  "detection_threshold": 0.7,
+  "enabled": false,
+  "enhancement": 0,
+  "known_plates": {},
+  "match_distance": 1,
+  "min_area": 1000,
+  "min_plate_length": 4,
+  "model_size": "small",
+  "recognition_threshold": 0.9,
+  "replace_rules": []
+ },
+ "model": {
+  "all_attributes": [
+   "ups",
+   "face",
+   "an_post",
+   "nzpost",
+   "license_plate",
+   "postnord",
+   "dpd",
+   "royal_mail",
+   "usps",
+   "canada_post",
+   "postnl",
+   "fedex",
+   "amazon",
+   "dhl",
+   "gls",
+   "purolator"
+  ],
+  "attributes_map": {
+   "bus": [
+    "license_plate"
+   ],
+   "car": [
+    "amazon",
+    "an_post",
+    "canada_post",
+    "dhl",
+    "dpd",
+    "fedex",
+    "gls",
+    "license_plate",
+    "nzpost",
+    "postnl",
+    "postnord",
+    "purolator",
+    "royal_mail",
+    "ups",
+    "usps"
+   ],
+   "garbage_truck": [
+    "license_plate"
+   ],
+   "motorcycle": [
+    "license_plate"
+   ],
+   "person": [
+    "amazon",
+    "face"
+   ],
+   "school_bus": [
+    "license_plate"
+   ],
+   "truck": [
+    "license_plate"
+   ]
+  },
+  "colormap": {
+   "person": [
+    31,
+    119,
+    180
+   ]
+  },
+  "height": 320,
+  "input_dtype": "int",
+  "input_pixel_format": "rgb",
+  "input_tensor": "nhwc",
+  "labelmap": {},
+  "model_type": "ssd",
+  "non_logo_attributes": [
+   "face",
+   "license_plate"
+  ],
+  "width": 320
+ },
+ "mqtt": {
+  "client_id": "frigate",
+  "enabled": false,
+  "host": "",
+  "port": 1883,
+  "qos": 0,
+  "stats_interval": 60,
+  "topic_prefix": "frigate"
+ },
+ "networking": {
+  "ipv6": {
+   "enabled": false
+  },
+  "listen": {
+   "external": 8971,
+   "internal": 5000
+  }
+ },
+ "notifications": {
+  "cooldown": 0,
+  "enabled": false,
+  "enabled_in_config": false
+ },
+ "objects": {
+  "filters": {
+   "amazon": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "an_post": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "canada_post": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "dhl": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "dpd": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "face": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "fedex": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "gls": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "license_plate": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "nzpost": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "postnl": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "postnord": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "purolator": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "royal_mail": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "ups": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   },
+   "usps": {
+    "mask": {},
+    "max_area": 24000000,
+    "max_ratio": 24000000.0,
+    "min_area": 0,
+    "min_ratio": 0.0,
+    "min_score": 0.7,
+    "threshold": 0.7
+   }
+  },
+  "genai": {
+   "debug_save_thumbnails": false,
+   "enabled": false,
+   "object_prompts": {},
+   "objects": [],
+   "prompt": "Analyze the sequence of images containing the {label}. Focus on the likely intent or behavior of the {label} based on its actions and movement, rather than describing its appearance or the surroundings. Consider what the {label} is doing, why, and what it might do next.",
+   "required_zones": [],
+   "send_triggers": {
+    "tracked_object_end": true
+   },
+   "use_snapshot": false
+  },
+  "mask": {},
+  "track": [
+   "person"
+  ]
+ },
+ "plus": {
+  "enabled": false
+ },
+ "profiles": {},
+ "proxy": {
+  "default_role": "viewer",
+  "header_map": {
+   "role_map": {}
+  },
+  "separator": ","
+ },
+ "record": {
+  "alerts": {
+   "post_capture": 5,
+   "pre_capture": 5,
+   "retain": {
+    "days": 14.0,
+    "mode": "all"
+   }
+  },
+  "continuous": {
+   "days": 0.0
+  },
+  "detections": {
+   "post_capture": 5,
+   "pre_capture": 5,
+   "retain": {
+    "days": 14.0,
+    "mode": "all"
+   }
+  },
+  "enabled": true,
+  "expire_interval": 60,
+  "export": {
+   "chapters": "review_items",
+   "hwaccel_args": "preset-vaapi",
+   "max_concurrent": 3
+  },
+  "motion": {
+   "days": 0.0
+  },
+  "preview": {
+   "quality": "medium"
+  }
+ },
+ "review": {
+  "alerts": {
+   "cutoff_time": 40,
+   "enabled": true,
+   "labels": [
+    "person",
+    "car"
+   ],
+   "required_zones": []
+  },
+  "detections": {
+   "cutoff_time": 30,
+   "enabled": true,
+   "required_zones": []
+  },
+  "genai": {
+   "activity_context_prompt": "### Normal Activity Indicators (Level 0)\n- Known/verified people in any zone at any time\n- People with pets in residential areas\n- Routine residential vehicle access during daytime/evening (6 AM - 10 PM): entering, exiting, loading/unloading items \u2014 normal commute and travel patterns\n- Deliveries or services during daytime/evening (6 AM - 10 PM): carrying packages to doors/porches, placing items, leaving\n- Services/maintenance workers with visible tools, uniforms, or service vehicles during daytime\n- Activity confined to public areas only (sidewalks, streets) without entering property at any time\n\n### Suspicious Activity Indicators (Level 1)\n- **Checking or probing vehicle/building access**: trying handles without entering, peering through windows, examining multiple vehicles, or possessing break-in tools \u2014 Level 1\n- **Unidentified person in private areas (driveways, near vehicles/buildings) during late night/early morning (11 PM - 5 AM)** \u2014 ALWAYS Level 1 regardless of activity or duration\n- Taking items that don't belong to them (packages, objects from porches/driveways)\n- Climbing or jumping fences/barriers to access property\n- Attempting to conceal actions or items from view\n- Prolonged loitering: remaining in same area without visible purpose throughout most of the sequence\n\n### Critical Threat Indicators (Level 2)\n- Holding break-in tools (crowbars, pry bars, bolt cutters)\n- Weapons visible (guns, knives, bats used aggressively)\n- Forced entry in progress\n- Physical aggression or violence\n- Active property damage or theft in progress\n\n### Assessment Guidance\nEvaluate in this order:\n\n1. **If person is verified/known** \u2192 Level 0 regardless of time or activity\n2. **If person is unidentified:**\n   - Check time: If late night/early morning (11 PM - 5 AM) AND in private areas (driveways, near vehicles/buildings) \u2192 Level 1\n   - Check actions: If probing access (trying handles without entering, checking multiple vehicles), taking items, climbing \u2192 Level 1\n   - Otherwise, if daytime/evening (6 AM - 10 PM) with clear legitimate purpose (delivery, service, routine vehicle access) \u2192 Level 0\n3. **Escalate to Level 2 if:** Weapons, break-in tools, forced entry in progress, violence, or active property damage visible (escalates from Level 0 or 1)\n\nThe mere presence of an unidentified person in private areas during late night hours is inherently suspicious and warrants human review, regardless of what activity they appear to be doing or how brief the sequence is.",
+   "additional_concerns": [],
+   "alerts": true,
+   "debug_save_thumbnails": false,
+   "detections": false,
+   "enabled": false,
+   "image_source": "preview"
+  }
+ },
+ "safe_mode": false,
+ "semantic_search": {
+  "enabled": false,
+  "model": "jinav1",
+  "model_size": "small",
+  "reindex": false
+ },
+ "snapshots": {
+  "bounding_box": true,
+  "crop": false,
+  "enabled": false,
+  "quality": 60,
+  "required_zones": [],
+  "retain": {
+   "default": 10.0,
+   "objects": {}
+  },
+  "timestamp": false
+ },
+ "telemetry": {
+  "network_interfaces": [],
+  "stats": {
+   "amd_gpu_stats": true,
+   "intel_gpu_stats": true,
+   "network_bandwidth": false
+  },
+  "version_check": true
+ },
+ "timestamp_style": {
+  "color": {
+   "blue": 255,
+   "green": 255,
+   "red": 255
+  },
+  "format": "%m/%d/%Y %H:%M:%S",
+  "position": "tl",
+  "thickness": 2
+ },
+ "tls": {
+  "enabled": true
+ },
+ "ui": {
+  "time_format": "browser",
+  "unit_system": "metric"
+ },
+ "version": "0.18-0"
+}

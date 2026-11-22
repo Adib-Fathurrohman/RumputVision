@@ -64,7 +64,7 @@ fun ConnectionIndicator(state: ConnectionState, modifier: Modifier = Modifier) {
         )
         ConnectionState.Connecting -> colors.warning to stringResource(R.string.connection_connecting)
         ConnectionState.NotConfigured -> colors.unknown to stringResource(R.string.connection_not_configured)
-        ConnectionState.Unauthorized -> colors.offline to stringResource(R.string.connection_unauthorized)
+        is ConnectionState.Unauthorized -> colors.offline to stringResource(R.string.connection_unauthorized)
         is ConnectionState.Unreachable -> colors.offline to stringResource(R.string.connection_unreachable)
         ConnectionState.Unknown -> colors.unknown to stringResource(R.string.connection_unknown)
     }

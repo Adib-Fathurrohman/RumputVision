@@ -13,7 +13,16 @@ import com.rumput.vision.domain.repository.AppPreferencesRepository
 import com.rumput.vision.domain.repository.ServerProfileRepository
 import com.rumput.vision.testing.FakeAppPreferencesRepository
 import com.rumput.vision.testing.FakeServerProfileRepository
+import com.rumput.vision.domain.model.ConnectionState
+import com.rumput.vision.domain.repository.ConnectionTester
+import com.rumput.vision.domain.repository.ServerConnection
+import com.rumput.vision.domain.repository.ServerRepository
+import com.rumput.vision.testing.FakeConnectionTester
+import com.rumput.vision.testing.FakeServerConnection
+import com.rumput.vision.testing.FakeServerRepository
 import dagger.Binds
+import dagger.Provides
+import javax.inject.Singleton
 import dagger.Module
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -32,6 +41,15 @@ abstract class FakeRepositoryModule {
     @Binds abstract fun profiles(fake: FakeServerProfileRepository): ServerProfileRepository
 
     @Binds abstract fun preferences(fake: FakeAppPreferencesRepository): AppPreferencesRepository
+
+    companion object {
+        // The real session would probe the network; navigation tests only need a stable state.
+        @Provides @Singleton fun connection(): ServerConnection = FakeServerConnection(ConnectionState.Unknown)
+
+        @Provides @Singleton fun server(): ServerRepository = FakeServerRepository()
+
+        @Provides @Singleton fun tester(): ConnectionTester = FakeConnectionTester()
+    }
 }
 
 /** End-to-end navigation through the real activity, Hilt graph and screens, with fake repositories. */

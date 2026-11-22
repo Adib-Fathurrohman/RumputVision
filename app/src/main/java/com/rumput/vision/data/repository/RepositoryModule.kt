@@ -1,7 +1,12 @@
 package com.rumput.vision.data.repository
 
+import com.rumput.vision.data.remote.FrigateConnectionTester
+import com.rumput.vision.data.remote.FrigateSession
 import com.rumput.vision.domain.repository.AppPreferencesRepository
+import com.rumput.vision.domain.repository.ConnectionTester
+import com.rumput.vision.domain.repository.ServerConnection
 import com.rumput.vision.domain.repository.ServerProfileRepository
+import com.rumput.vision.domain.repository.ServerRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -15,4 +20,13 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindAppPreferencesRepository(impl: DefaultAppPreferencesRepository): AppPreferencesRepository
+
+    @Binds
+    abstract fun bindServerConnection(impl: FrigateSession): ServerConnection
+
+    @Binds
+    abstract fun bindServerRepository(impl: FrigateServerRepository): ServerRepository
+
+    @Binds
+    abstract fun bindConnectionTester(impl: FrigateConnectionTester): ConnectionTester
 }

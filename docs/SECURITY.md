@@ -211,11 +211,21 @@ profile-save time and will be enforced again at request time in Phase 2.
 
 Android's network security config cannot list arbitrary IP addresses, so the
 cleartext permission in the manifest is broad and the restriction above is
-enforced by the app itself. In Phase 2 an OkHttp interceptor rejects any
-cleartext request that would carry an `Authorization` header or cookie,
-regardless of profile settings.
+enforced by the app itself. `core/network/TransportGuardInterceptor.kt` runs on
+every request, regardless of profile settings. It rejects any cleartext request
+that carries an `Authorization` header or cookie, any `/api/login` over HTTP,
+and any HTTP request to a public host. HTTP redirects are never followed
+automatically, so a redirect cannot move credentials to another scheme or host.
+Connection tests report the redirect target to the user instead.
 
-### 2.4 Authentication flow (Phase 2, based on docs; to verify on 8971)
+Certificate failures are always reported as TLS errors, even when OkHttp's
+route fallback ends with a different exception, and they are never bypassed.
+
+The app also detects authentication bypass on the server: if `/api/profile`
+answers as `anonymous` with role `admin`, Home and the connection test show a
+warning (this is the case for S1 today).
+
+### 2.4 Authentication flow (implemented in Phase 2; verified only against a test server)
 
 - `POST /api/login` with `{"user": ..., "password": ...}`; the JWT arrives in
   the `frigate_token` cookie (cookie name from `auth.cookie_name` in
@@ -229,6 +239,12 @@ regardless of profile settings.
   move the profile to the "sign-in required" state. Never retry in a loop.
 - Logout: `GET /api/logout`, then delete the token (and password if the user
   asks).
+
+Implementation: `data/remote/auth/` (`FrigateLoginService`,
+`BearerTokenInterceptor`, `ReauthenticatingAuthenticator`) and
+`data/remote/FrigateSession.kt`. The flow is covered by tests against an HTTPS
+MockWebServer that mimics port 8971. It has **not** been tested against the
+real server's port 8971, which is not reachable yet (S1).
 
 ### 2.5 Notifications
 

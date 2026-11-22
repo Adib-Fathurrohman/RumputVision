@@ -10,15 +10,23 @@ import com.rumput.vision.domain.model.StreamQuality
 import com.rumput.vision.domain.repository.AppPreferencesRepository
 import com.rumput.vision.domain.repository.PasswordUpdate
 import com.rumput.vision.domain.repository.ServerProfileRepository
-import com.rumput.vision.domain.usecase.ServerUrlPolicy
+import com.rumput.vision.domain.model.CameraWithStatus
+import com.rumput.vision.domain.model.ConnectionState
+import com.rumput.vision.domain.model.ConnectionTestReport
+import com.rumput.vision.domain.model.FrigateResult
+import com.rumput.vision.domain.model.ServerStatus
+import com.rumput.vision.domain.model.UnauthorizedReason
+import com.rumput.vision.domain.repository.ConnectionTester
+import com.rumput.vision.domain.repository.ServerConnection
+import com.rumput.vision.domain.repository.ServerRepository
+import com.rumput.vision.domain.repository.SignInResult
+import com.rumput.vision.domain.usecase.ServerProfileDraft
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import javax.inject.Singleton
-
-fun url(raw: String) = (ServerUrlPolicy.parse(raw) as ServerUrlPolicy.ParseResult.Valid).url
 
 fun profile(
     id: String = "p1",
@@ -85,6 +93,54 @@ class FakeServerProfileRepository @Inject constructor() : ServerProfileRepositor
     }
 
     override suspend fun hasStoredPassword(id: String): Boolean = passwords.containsKey(id)
+
+    override suspend fun hasStoredCredentials(id: String): Boolean = passwords.containsKey(id)
+
+    override suspend fun clearCredentials(id: String) {
+        passwords.remove(id)
+    }
+}
+
+class FakeServerConnection(initial: ConnectionState = ConnectionState.Unknown) : ServerConnection {
+    override val state = MutableStateFlow(initial)
+    var reconnects = 0
+    var signInResult: SignInResult = SignInResult.Success
+    val signIns = mutableListOf<Pair<String, Boolean>>()
+
+    override fun reconnect() {
+        reconnects++
+    }
+
+    override suspend fun signIn(password: String, rememberPassword: Boolean): SignInResult {
+        signIns += password to rememberPassword
+        return signInResult
+    }
+
+    override suspend fun signOut() {
+        state.value = ConnectionState.Unauthorized(UnauthorizedReason.SIGN_IN_REQUIRED)
+    }
+}
+
+class FakeServerRepository : ServerRepository {
+    val cameras = MutableStateFlow<List<CameraWithStatus>>(emptyList())
+    val status = MutableStateFlow<ServerStatus?>(null)
+    var refreshResult: FrigateResult<Unit> = FrigateResult.Success(Unit)
+    var refreshCount = 0
+
+    override fun observeCameras(): Flow<List<CameraWithStatus>> = cameras
+    override fun observeServerStatus(): Flow<ServerStatus?> = status
+    override suspend fun refresh(): FrigateResult<Unit> {
+        refreshCount++
+        return refreshResult
+    }
+}
+
+class FakeConnectionTester(var report: ConnectionTestReport = ConnectionTestReport(emptyList())) : ConnectionTester {
+    val tested = mutableListOf<ServerProfileDraft>()
+    override suspend fun test(draft: ServerProfileDraft): ConnectionTestReport {
+        tested += draft
+        return report
+    }
 }
 
 @Singleton
@@ -123,5 +179,23 @@ class FakeSecretCipher : SecretCipher {
         val expected = (plaintext.contentHashCode() * 31 + associatedData.contentHashCode()).toString().toByteArray()
         if (!tag.contentEquals(expected)) throw SecretCipherException("bad tag")
         return plaintext
+    }
+}
+
+class FakeCredentialStore : com.rumput.vision.core.security.CredentialStore {
+    val values = java.util.concurrent.ConcurrentHashMap<String, com.rumput.vision.core.security.StoredCredentials>()
+
+    override suspend fun read(profileId: String) = values[profileId]
+
+    override suspend fun update(
+        profileId: String,
+        transform: (com.rumput.vision.core.security.StoredCredentials?) -> com.rumput.vision.core.security.StoredCredentials?,
+    ) {
+        val next = transform(values[profileId])?.takeUnless { it.isEmpty }
+        if (next == null) values.remove(profileId) else values[profileId] = next
+    }
+
+    override suspend fun delete(profileId: String) {
+        values.remove(profileId)
     }
 }

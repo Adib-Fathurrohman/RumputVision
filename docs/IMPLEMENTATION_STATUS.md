@@ -4,8 +4,11 @@ Legend: **Not started** · **In progress** · **Implemented** (code exists,
 not automatically tested) · **Tested** (automated test executed and passing)
 · **Blocked**
 
-Last updated: 2026-11-22. Test run: `./gradlew :app:testDebugUnitTest`,
-47 tests, 0 failures. Manual check on emulator (API 36.1).
+Last updated: 2026-11-22 (Phase 2). Test run: `./gradlew :app:testDebugUnitTest`.
+96 tests, 0 failures, 1 skipped (the opt-in live test). The live test was also
+run separately against the real server and passed. Lint: 0 errors.
+Manual end-to-end check on the emulator (API 36.1) against the real Frigate
+0.18.2 over the LAN.
 
 ## Phase 0 — Audit and discovery: done
 
@@ -34,22 +37,33 @@ Last updated: 2026-11-22. Test run: `./gradlew :app:testDebugUnitTest`,
 | Log redaction | Tested | |
 | Backup exclusion | Implemented | Manifest + rules; not tested. |
 
-## Phase 2 — Frigate connection: not started
+## Phase 2 — Frigate connection: done (with one blocked verification)
 
 | Feature | Status | Notes |
 |---|---|---|
-| Retrofit/OkHttp client, DTOs | Not started | |
-| Request-time cleartext and credential guard | Not started | |
-| Login / token / refresh / logout | **Blocked** for real verification | Needs SECURITY.md S1 + S3 (port 8971 behind HTTPS). Can be built against the spec and MockWebServer. |
-| Connection test, endpoint selection (local/remote) | Not started | |
-| Camera discovery (`/api/config`, `/api/stats`) | Not started | |
-| Realtime `/ws` with backoff | Not started | |
-| Mock Frigate API for tests | Not started | |
+| OkHttp/Retrofit client, DTOs from the real 0.18.2 responses | Tested | Sanitized recorded fixtures; live test against the real server passed. |
+| Transport guard (no credentials/login over HTTP, no HTTP to public hosts, no redirects) | Tested | |
+| Login, Bearer token, refresh via re-issued cookie, re-auth on 401, logout | Tested against an HTTPS test server | **Blocked** for real-server verification until port 8971 is reachable over HTTPS (SECURITY.md S1/S3). |
+| Encrypted storage of token and optional password | Tested (logic) | Keystore cipher itself still needs an on-device test. |
+| Endpoint selection: local/remote, Wi-Fi vs mobile order, debounced network changes | Tested | Verified on emulator: airplane mode → "No network", then automatic reconnect. **Remote/Tailscale path not tried on a real network** (no remote URL configured yet). |
+| Connection state machine (connected, unauthorized reasons, unreachable reasons) | Tested | |
+| Anonymous-admin (auth bypass) detection | Tested + verified on the real server | Shown on Home and in the connection test. |
+| Connection test in profile editor | Tested + verified on the real server | |
+| Sign-in card on Home, "Forget saved sign-in" | Tested (ViewModel/session) | UI not exercised against a real auth server (blocked as above). |
+| Camera discovery (dynamic list), metadata, Room cache (DB v2 + migration) | Tested + verified on the real server | 4 cameras discovered; migration ran on the emulator's Phase 1 data. |
+| Camera status (online/offline/disabled/unknown, last seen) | Tested + verified on the real server | Cached lists are labelled; stale data (>2 min) shows "unknown". |
+| Server status (version, update, uptime, detectors, storage) | Tested + verified on the real server | |
+| Refresh cadence | Tested | 30 s only while Home is visible and connected; nothing in the background. |
+| Realtime `/ws` | Not started | Moved to the events phase (Phase 5). |
 
-## Phase 3 — Dashboard and cameras: not started
+## Phase 3 — Dashboard and cameras: in progress
 
-Dashboard data, camera list, snapshots, camera detail. Screens currently show
-an explicit "not available yet" state.
+| Feature | Status | Notes |
+|---|---|---|
+| Dashboard with server status and camera list | Implemented (Phase 2) | |
+| Cameras tab list with status and refresh | Implemented (Phase 2) | |
+| Snapshot previews (`latest.webp`), preview grid | Not started | |
+| Camera detail screen | Not started | |
 
 ## Phase 4 — Live streaming: not started
 
@@ -71,6 +85,7 @@ physical device for verification.
 ## Known limitations
 
 - Compose BOM is held at 2026.09.00 until SDK platform 37.1 is installed.
-- No connection to Frigate yet. Screens other than Settings show placeholders
-  that say so.
+- Events and Recordings tabs still show "not available yet" placeholders.
+- The app shows Frigate's `connection_quality` value as reported (e.g. "unusable"
+  while the camera still delivers frames).
 - The light theme is defined but not selectable.

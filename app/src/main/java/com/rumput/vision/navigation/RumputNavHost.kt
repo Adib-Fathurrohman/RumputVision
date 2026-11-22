@@ -28,7 +28,10 @@ fun RumputNavHost(
             )
         }
         composable<HomeRoute> {
-            DashboardScreen(onAddServer = { navController.navigate(ServerProfileEditRoute()) })
+            DashboardScreen(
+                onAddServer = { navController.navigate(ServerProfileEditRoute()) },
+                onEditServer = { id -> navController.navigate(ServerProfileEditRoute(profileId = id)) },
+            )
         }
         composable<CamerasRoute> { CamerasScreen() }
         composable<EventsRoute> { EventsScreen() }

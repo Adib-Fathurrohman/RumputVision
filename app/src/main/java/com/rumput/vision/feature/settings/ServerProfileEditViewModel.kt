@@ -4,7 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rumput.vision.domain.model.AuthMode
+import com.rumput.vision.domain.model.ConnectionTestReport
 import com.rumput.vision.domain.model.EndpointPreference
+import com.rumput.vision.domain.repository.ConnectionTester
 import com.rumput.vision.domain.repository.ServerProfileRepository
 import com.rumput.vision.domain.usecase.ProfileValidation
 import com.rumput.vision.domain.usecase.SaveProfileResult
@@ -30,6 +32,10 @@ data class ServerProfileEditUiState(
     val isSaving: Boolean = false,
     val notFound: Boolean = false,
     val finished: Boolean = false,
+    val isTesting: Boolean = false,
+    /** Cleared whenever the draft changes, so results always describe the current input. */
+    val testReport: ConnectionTestReport? = null,
+    val hasStoredCredentials: Boolean = false,
 )
 
 @HiltViewModel
@@ -38,6 +44,7 @@ class ServerProfileEditViewModel @Inject constructor(
     private val repository: ServerProfileRepository,
     private val validate: ValidateServerProfileUseCase,
     private val saveProfile: SaveServerProfileUseCase,
+    private val connectionTester: ConnectionTester,
 ) : ViewModel() {
 
     // Navigation stores type-safe route properties under their names.
@@ -61,6 +68,7 @@ class ServerProfileEditViewModel @Inject constructor(
             return
         }
         val hasPassword = repository.hasStoredPassword(id)
+        val hasCredentials = repository.hasStoredCredentials(id)
         _uiState.update {
             it.copy(
                 isLoading = false,
@@ -75,6 +83,7 @@ class ServerProfileEditViewModel @Inject constructor(
                     endpointPreference = profile.endpointPreference,
                 ),
                 hasStoredPassword = hasPassword,
+                hasStoredCredentials = hasCredentials,
             )
         }
         revalidate()
@@ -111,6 +120,27 @@ class ServerProfileEditViewModel @Inject constructor(
         }
     }
 
+    fun testConnection() {
+        val current = _uiState.value
+        if (current.isTesting || current.isLoading) return
+        _uiState.update { it.copy(showErrors = true) }
+        val v = current.validation
+        if (v.localUrlError != null || v.remoteUrlError != null || v.formError != null) return
+        _uiState.update { it.copy(isTesting = true, testReport = null) }
+        viewModelScope.launch {
+            val report = connectionTester.test(_uiState.value.draft)
+            _uiState.update { it.copy(isTesting = false, testReport = report) }
+        }
+    }
+
+    fun forgetCredentials() {
+        val id = profileId ?: return
+        viewModelScope.launch {
+            repository.clearCredentials(id)
+            _uiState.update { it.copy(hasStoredPassword = false, hasStoredCredentials = false) }
+        }
+    }
+
     fun delete() {
         val id = profileId ?: return
         viewModelScope.launch {
@@ -120,7 +150,7 @@ class ServerProfileEditViewModel @Inject constructor(
     }
 
     private fun edit(transform: ServerProfileDraft.() -> ServerProfileDraft) {
-        _uiState.update { it.copy(draft = it.draft.transform()) }
+        _uiState.update { it.copy(draft = it.draft.transform(), testReport = null) }
         revalidate()
     }
 
