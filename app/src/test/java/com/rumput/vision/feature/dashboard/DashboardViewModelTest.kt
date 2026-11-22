@@ -30,7 +30,9 @@ class DashboardViewModelTest {
 
     private val media = com.rumput.vision.testing.FakeCameraMedia()
 
-    private fun viewModel() = DashboardViewModel(profiles, connection, server, media)
+    private val events = com.rumput.vision.testing.FakeEventRepository()
+
+    private fun viewModel() = DashboardViewModel(profiles, connection, server, media, events)
 
     private val connected = ConnectionState.Connected(
         route = com.rumput.vision.domain.model.ConnectionRoute.LOCAL,

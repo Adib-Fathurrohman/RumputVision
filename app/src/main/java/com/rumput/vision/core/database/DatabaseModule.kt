@@ -22,4 +22,7 @@ object DatabaseModule {
 
     @Provides
     fun provideCameraDao(db: RumputDatabase): CameraDao = db.cameraDao()
+
+    @Provides
+    fun provideEventDao(db: RumputDatabase): EventDao = db.eventDao()
 }

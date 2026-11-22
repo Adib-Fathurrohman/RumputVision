@@ -1,0 +1,118 @@
+[
+ {
+  "events": 16,
+  "hours": [
+   {
+    "hour": "17",
+    "events": 1,
+    "motion": 122,
+    "objects": 0,
+    "duration": 74
+   },
+   {
+    "hour": "16",
+    "events": 2,
+    "motion": 21,
+    "objects": 0,
+    "duration": 97
+   },
+   {
+    "hour": "15",
+    "events": 4,
+    "motion": 1075,
+    "objects": 0,
+    "duration": 211
+   },
+   {
+    "hour": "14",
+    "events": 2,
+    "motion": 672,
+    "objects": 0,
+    "duration": 99
+   },
+   {
+    "hour": "11",
+    "events": 1,
+    "motion": 157,
+    "objects": 0,
+    "duration": 51
+   },
+   {
+    "hour": "10",
+    "events": 6,
+    "motion": 7723,
+    "objects": 0,
+    "duration": 276
+   }
+  ],
+  "day": "2026-11-22"
+ },
+ {
+  "events": 12,
+  "hours": [
+   {
+    "hour": "15",
+    "events": 2,
+    "motion": 5574,
+    "objects": 0,
+    "duration": 108
+   },
+   {
+    "hour": "12",
+    "events": 2,
+    "motion": 1403,
+    "objects": 0,
+    "duration": 97
+   },
+   {
+    "hour": "11",
+    "events": 2,
+    "motion": 3086,
+    "objects": 0,
+    "duration": 98
+   },
+   {
+    "hour": "10",
+    "events": 1,
+    "motion": 527,
+    "objects": 0,
+    "duration": 52
+   },
+   {
+    "hour": "09",
+    "events": 4,
+    "motion": 5046,
+    "objects": 0,
+    "duration": 180
+   },
+   {
+    "hour": "06",
+    "events": 1,
+    "motion": 563,
+    "objects": 0,
+    "duration": 47
+   }
+  ],
+  "day": "2026-11-16"
+ },
+ {
+  "events": 9,
+  "hours": [
+   {
+    "hour": "19",
+    "events": 8,
+    "motion": 6987,
+    "objects": 0,
+    "duration": 321
+   },
+   {
+    "hour": "18",
+    "events": 1,
+    "motion": 426,
+    "objects": 0,
+    "duration": 52
+   }
+  ],
+  "day": "2026-11-15"
+ }
+]

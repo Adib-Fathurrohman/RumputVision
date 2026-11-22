@@ -63,7 +63,7 @@ class MigrationTest {
     }
 
     private companion object {
-        const val CURRENT_VERSION = 3
+        const val CURRENT_VERSION = 4
 
         // Unit tests run with the module directory as the working directory.
         val SCHEMA_DIR = File("schemas/com.rumput.vision.core.database.RumputDatabase")

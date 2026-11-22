@@ -206,6 +206,13 @@ class FakeCameraMedia(var baseUrl: String? = null) : com.rumput.vision.domain.re
 
     override fun liveStreamUrl(streamName: String): String? =
         baseUrl?.let { "${it.replace("http", "ws")}/live/mse/api/ws?src=$streamName" }
+
+    override fun eventThumbnailUrl(eventId: String) = baseUrl?.let { "$it/api/events/$eventId/thumbnail.webp" }
+
+    override fun eventSnapshotUrl(eventId: String, height: Int) = baseUrl?.let { "$it/api/events/$eventId/snapshot.jpg?height=$height" }
+
+    override fun recordingPlaylistUrl(camera: String, startEpochSeconds: Long, endEpochSeconds: Long) =
+        baseUrl?.let { "$it/vod/$camera/start/$startEpochSeconds/end/$endEpochSeconds/index.m3u8" }
 }
 
 /** Records calls; tests drive [state] directly. */
@@ -265,3 +272,67 @@ fun cameraWithStatus(
     lastSeenOnlineEpochMillis = null,
     isCached = cached,
 )
+
+fun event(id: String, camera: String = "garasi", start: Long = 1_000_000, end: Long? = start + 35_000) =
+    com.rumput.vision.domain.model.Event(
+        id = id, camera = camera, label = "orang_terdeteksi", subLabel = null, startEpochMillis = start,
+        endEpochMillis = end, hasClip = true, hasSnapshot = true, zones = emptyList(), score = null, retained = false,
+    )
+
+class FakeEventRepository : com.rumput.vision.domain.repository.EventRepository {
+    val cached = MutableStateFlow<List<com.rumput.vision.domain.model.Event>>(emptyList())
+    /** Server-side events, newest first. */
+    var remote: List<com.rumput.vision.domain.model.Event> = emptyList()
+    var failWith: com.rumput.vision.domain.model.FrigateError? = null
+    val requests = mutableListOf<Pair<com.rumput.vision.domain.model.EventFilter, Long?>>()
+    override val eventActivity = kotlinx.coroutines.flow.MutableSharedFlow<Unit>()
+
+    override fun observeCachedEvents(filter: com.rumput.vision.domain.model.EventFilter, limit: Int) =
+        cached.map { list -> list.filter(filter::matches).take(limit) }
+
+    override suspend fun fetchEvents(
+        filter: com.rumput.vision.domain.model.EventFilter,
+        beforeEpochMillis: Long?,
+        limit: Int,
+    ): FrigateResult<com.rumput.vision.domain.model.EventPage> {
+        requests += filter to beforeEpochMillis
+        failWith?.let { return FrigateResult.Failure(it) }
+        val page = remote.filter(filter::matches).filter { beforeEpochMillis == null || it.startEpochMillis < beforeEpochMillis }.take(limit)
+        return FrigateResult.Success(com.rumput.vision.domain.model.EventPage(page, page.lastOrNull()?.startEpochMillis?.takeIf { page.size >= limit }))
+    }
+
+    override suspend fun getEvent(id: String): FrigateResult<com.rumput.vision.domain.model.Event> =
+        (remote + cached.value).firstOrNull { it.id == id }?.let { FrigateResult.Success(it) }
+            ?: FrigateResult.Failure(com.rumput.vision.domain.model.FrigateError.Http(404))
+
+    override suspend fun labels(): FrigateResult<List<String>> = FrigateResult.Success(listOf("orang_terdeteksi"))
+}
+
+class FakeRecordingRepository : com.rumput.vision.domain.repository.RecordingRepository {
+    var days: List<com.rumput.vision.domain.model.RecordingDay> = emptyList()
+    var segments: List<com.rumput.vision.domain.model.RecordingSegment> = emptyList()
+    val dayRequests = mutableListOf<String>()
+    override suspend fun recordingDays(camera: String): FrigateResult<List<com.rumput.vision.domain.model.RecordingDay>> {
+        dayRequests += camera
+        return FrigateResult.Success(days)
+    }
+    override suspend fun segments(camera: String, startEpochMillis: Long, endEpochMillis: Long) = FrigateResult.Success(segments)
+}
+
+class FakeRecordingPlayer : com.rumput.vision.core.streaming.RecordingPlayer {
+    override val state = MutableStateFlow<com.rumput.vision.core.streaming.PlaybackState>(com.rumput.vision.core.streaming.PlaybackState.Idle)
+    override val player: androidx.media3.common.Player? = null
+    var loaded: String? = null
+    var released = false
+    override var positionMillis = 0L
+    override fun load(playlistUrl: String) { loaded = playlistUrl; state.value = com.rumput.vision.core.streaming.PlaybackState.Loading }
+    override fun play() { (state.value as? com.rumput.vision.core.streaming.PlaybackState.Ready)?.let { state.value = it.copy(playing = true) } }
+    override fun pause() { (state.value as? com.rumput.vision.core.streaming.PlaybackState.Ready)?.let { state.value = it.copy(playing = false) } }
+    override fun seekTo(positionMillis: Long) { this.positionMillis = positionMillis.coerceAtLeast(0) }
+    override fun release() { released = true }
+}
+
+class FakeRecordingPlayerFactory : com.rumput.vision.core.streaming.RecordingPlayerFactory {
+    val created = mutableListOf<FakeRecordingPlayer>()
+    override fun create() = FakeRecordingPlayer().also { created += it }
+}

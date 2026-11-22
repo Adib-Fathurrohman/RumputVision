@@ -27,3 +27,10 @@ data class CameraDetailRoute(val cameraName: String)
 data class LiveViewRoute(val cameraName: String)
 
 @Serializable data object LiveGridRoute
+
+@Serializable
+data class EventDetailRoute(val eventId: String)
+
+/** A window of recordings, in epoch seconds. */
+@Serializable
+data class PlaybackRoute(val camera: String, val startEpochSeconds: Long, val endEpochSeconds: Long)

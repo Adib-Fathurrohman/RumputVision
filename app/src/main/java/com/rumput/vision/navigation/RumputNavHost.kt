@@ -9,7 +9,9 @@ import androidx.navigation.toRoute
 import com.rumput.vision.feature.cameras.CameraDetailScreen
 import com.rumput.vision.feature.cameras.CamerasScreen
 import com.rumput.vision.feature.dashboard.DashboardScreen
+import com.rumput.vision.feature.events.EventDetailScreen
 import com.rumput.vision.feature.events.EventsScreen
+import com.rumput.vision.feature.playback.PlaybackScreen
 import com.rumput.vision.feature.liveview.LiveGridScreen
 import com.rumput.vision.feature.liveview.LiveViewScreen
 import com.rumput.vision.feature.onboarding.OnboardingScreen
@@ -36,6 +38,8 @@ fun RumputNavHost(
                 onEditServer = { id -> navController.navigate(ServerProfileEditRoute(profileId = id)) },
                 onOpenCamera = { name -> navController.navigate(CameraDetailRoute(name)) },
                 onOpenLiveGrid = { navController.navigate(LiveGridRoute) },
+                onOpenEvent = { id -> navController.navigate(EventDetailRoute(id)) },
+                onOpenAllEvents = { navController.navigateToTopLevel(TopLevelDestination.EVENTS) },
             )
         }
         composable<CamerasRoute> {
@@ -57,8 +61,20 @@ fun RumputNavHost(
                 onOpenCamera = { name -> navController.navigate(LiveViewRoute(name)) },
             )
         }
-        composable<EventsRoute> { EventsScreen() }
-        composable<RecordingsRoute> { RecordingsScreen() }
+        composable<EventsRoute> {
+            EventsScreen(onOpenEvent = { id -> navController.navigate(EventDetailRoute(id)) })
+        }
+        composable<RecordingsRoute> {
+            RecordingsScreen(onPlay = { w -> navController.navigate(PlaybackRoute(w.camera, w.startEpochSeconds, w.endEpochSeconds)) })
+        }
+        composable<EventDetailRoute> {
+            EventDetailScreen(
+                onBack = navController::navigateUp,
+                onPlayClip = { w -> navController.navigate(PlaybackRoute(w.camera, w.startEpochSeconds, w.endEpochSeconds)) },
+                onOpenLive = { camera -> navController.navigate(LiveViewRoute(camera)) },
+            )
+        }
+        composable<PlaybackRoute> { PlaybackScreen(onBack = navController::navigateUp) }
         composable<SettingsRoute> {
             SettingsScreen(
                 onAddServer = { navController.navigate(ServerProfileEditRoute()) },

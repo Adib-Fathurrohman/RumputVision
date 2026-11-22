@@ -7,4 +7,11 @@ interface CameraMedia {
 
     /** go2rtc MSE WebSocket (`/live/mse/api/ws?src=<stream>`), as ws:// or wss:// matching the server URL. */
     fun liveStreamUrl(streamName: String): String?
+
+    fun eventThumbnailUrl(eventId: String): String?
+
+    fun eventSnapshotUrl(eventId: String, height: Int): String?
+
+    /** Frigate VOD (HLS, fMP4) of [camera]'s recordings between two epoch-second times. 404 when none exist. */
+    fun recordingPlaylistUrl(camera: String, startEpochSeconds: Long, endEpochSeconds: Long): String?
 }

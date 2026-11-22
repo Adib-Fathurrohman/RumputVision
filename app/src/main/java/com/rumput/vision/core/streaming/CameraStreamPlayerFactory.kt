@@ -29,4 +29,7 @@ class Media3CameraStreamPlayerFactory @Inject constructor(
 abstract class StreamingModule {
     @Binds
     abstract fun bindPlayerFactory(impl: Media3CameraStreamPlayerFactory): CameraStreamPlayerFactory
+
+    @Binds
+    abstract fun bindRecordingPlayerFactory(impl: Media3RecordingPlayerFactory): RecordingPlayerFactory
 }

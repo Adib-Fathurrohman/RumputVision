@@ -79,6 +79,12 @@ a physical device for Phase 4.
 | `MigrationTest` | Robolectric + SQLite | Real v1 database (from exported schema) → v2 |
 | `DashboardViewModelTest` | coroutines-test | 30 s refresh only while observed and connected; sign-in |
 | `LiveFrigateServerTest` | opt-in, real server | Real stack against `FRIGATE_LIVE_URL` (skipped when unset) |
+| `MseWebSocketDataSourceTest` | Robolectric + WebSocket server | go2rtc MSE protocol, errors, stall, abort, close |
+| `StreamingLogicTest`, `LiveViewModelsTest` | JVM | Retry/backoff, codecs, error mapping, stream selection; live view and grid ViewModels |
+| `FrigateEventRepositoryTest` | Robolectric + Room + test server | Events parse/cache/paging/filters, offline detail, realtime keys |
+| `FrigateRealtimeTest` | WebSocket server | Messages, reconnect with backoff, no socket while disconnected |
+| `RecordingTimelineTest` | JVM | Playlist ↔ wall clock, including Frigate's untrimmed start (real numbers) |
+| `EventsViewModelsTest`, `RecordingsAndPlaybackTest` | coroutines-test | Paging, filters, offline, realtime merge; hour windows; playback |
 
 Recorded fixtures live in `app/src/test/resources/frigate/0.18.2/`. They
 were captured from the real server and **sanitized**: go2rtc stream sources

@@ -7,13 +7,13 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
+import com.rumput.vision.core.network.WebSocketDispatcher
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import okhttp3.Dispatcher
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import okhttp3.Response
@@ -72,10 +72,7 @@ class MseWebSocketDataSource(
         val url = dataSpec.uri.toString()
         val httpUrl = url.replaceFirst("ws://", "http://").replaceFirst("wss://", "https://").toHttpUrl()
         val client = clients.mediaClientFor(httpUrl).newBuilder()
-            // OkHttp runs a WebSocket's reader on a dispatcher thread for the socket's whole life, which counts
-            // against maxRequestsPerHost (5). Four live streams would leave one slot for every API call and
-            // snapshot to the same server; a dedicated dispatcher keeps them apart.
-            .dispatcher(STREAM_DISPATCHER)
+            .dispatcher(WebSocketDispatcher)
             .pingInterval(10, TimeUnit.SECONDS)
             .readTimeout(0, TimeUnit.MILLISECONDS)
             .build()
@@ -219,10 +216,6 @@ class MseWebSocketDataSource(
      */
     private companion object {
         const val NORMAL_CLOSURE = 1000
-        val STREAM_DISPATCHER = Dispatcher().apply {
-            maxRequests = 64
-            maxRequestsPerHost = 16
-        }
     }
 
     class Factory(private val clients: StreamClientProvider, private val codecs: () -> String) : DataSource.Factory {

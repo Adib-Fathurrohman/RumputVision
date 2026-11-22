@@ -83,7 +83,23 @@ Verified on an Infinix X6731B (Android 14) against the real server. Details in `
 | Low-latency WifiLock | Removed | A/B on the device showed no benefit. |
 | Tailscale remote streaming | Not verified | |
 
-## Phase 5 — Events and recordings: not started
+## Phase 5 — Events and recordings: done (export not implemented)
+
+Verified on the emulator against the real server (Frigate 0.18.2), 2026-11-22.
+
+| Feature | Status | Notes |
+|---|---|---|
+| Event feed: day-grouped timeline, thumbnails, paging | Tested + verified on server | Pages of 50 via `before`. |
+| Filters: camera, label (shown when > 1 label), Today / 24 h / 7 days / a picked day | Tested | |
+| Offline: cached events (Room v4), labelled | Tested | Metadata only; no images are written to disk. |
+| Event detail: snapshot, metadata, play recording, open live view | Tested + verified on server | |
+| Event clip playback (VOD window with ±5 s padding) | Tested + verified on server | |
+| Recordings: camera → day → hour, recorded time per hour | Tested + verified on server | |
+| Playback: HLS VOD, play/pause, seek, ±10 s, wall-clock time, segment strip | Tested + verified on server | Wall clock matched the camera overlay to the second. |
+| Expired / missing recordings | Implemented | A 404 shows a clear message; verified with curl, not yet seen in the app. |
+| Realtime `/ws` (backoff, dedupe, only while observed) | Tested + verified on server | Server log shows the app's `/ws` opening and closing with screen use. |
+| Recent events on Home | Implemented + verified on server | |
+| Download / export clips | Not started | |
 
 ## Phase 6 — Reliability and release: not started
 
@@ -96,6 +112,12 @@ Verified on an Infinix X6731B (Android 14) against the real server. Details in `
 | Push via FCM relay | Not started | Separate service; MQTT is disabled on the server. |
 
 ## Known limitations
+
+- **The Garasi camera's clock is one hour ahead** (its overlay showed 11:08 for footage recorded at
+  10:08 WIB, and the other cameras match). Recording times in the app come from Frigate and are
+  correct; fix the camera's time zone (probably set to UTC+8 instead of +7).
+- Home Assistant creates alarms very often (22 in 6 minutes on 2026-11-22), so the event list grows
+  quickly; consider tuning the automations.
 
 - Camera audio (PCMA, transcoded to FLAC by go2rtc) fails on Android's FLAC decoder, so live view
   falls back to video only. Fix on the server: give go2rtc an AAC audio source, e.g.

@@ -41,8 +41,6 @@
     <!-- Dashboard and pending features -->
     <string name="dashboard_no_server_title">No server configured</string>
     <string name="dashboard_no_server_body">Add a Frigate server to see cameras and events.</string>
-    <string name="events_pending_body">The event timeline is not available in this build yet.</string>
-    <string name="recordings_pending_body">Recording playback is not available in this build yet.</string>
 
     <!-- Settings -->
     <string name="settings_section_servers">Servers</string>
@@ -239,4 +237,61 @@
     <string name="error_tls">The server\'s certificate is not trusted, so the connection was stopped. Install a certificate from a trusted authority (for example Tailscale HTTPS).</string>
     <string name="error_insecure_transport">Blocked: credentials are never sent over unencrypted HTTP.</string>
     <string name="error_network_other">A network error occurred.</string>
+    <!-- Phase 5: events and recordings -->
+    <string name="action_ok">OK</string>
+    <string name="day_today">Today</string>
+    <string name="day_yesterday">Yesterday</string>
+    <string name="range_all">All</string>
+    <string name="range_today">Today</string>
+    <string name="range_24h">24 hours</string>
+    <string name="range_7d">7 days</string>
+    <string name="events_pick_day">Pick a day</string>
+    <string name="events_clear_filters">Clear filters</string>
+    <string name="events_load_failed">Could not load events</string>
+    <string name="events_empty_title">No events</string>
+    <string name="events_empty_body">Events from Frigate will appear here.</string>
+    <string name="events_empty_filtered">No events match these filters.</string>
+    <string name="events_cached_notice">Showing saved events. The server cannot be reached right now.</string>
+    <string name="event_open">Open event</string>
+    <string name="event_title">Event</string>
+    <string name="event_in_progress">In progress</string>
+    <string name="event_not_found">This event no longer exists</string>
+    <string name="event_load_failed">Could not load the event</string>
+    <string name="event_snapshot_description">Event snapshot</string>
+    <string name="event_play_clip">Play recording</string>
+    <string name="event_no_clip">No recording for this event</string>
+    <string name="event_open_live">Live view of this camera</string>
+    <string name="event_section_details">Details</string>
+    <string name="event_camera">Camera</string>
+    <string name="event_label">Label</string>
+    <string name="event_sub_label">Sub label</string>
+    <string name="event_date">Date</string>
+    <string name="event_started">Started</string>
+    <string name="event_duration">Duration</string>
+    <string name="event_zones">Zones</string>
+    <string name="event_score">Score</string>
+    <string name="event_retained">Kept indefinitely</string>
+    <string name="dashboard_recent_events">Recent events</string>
+    <string name="dashboard_all_events">All events</string>
+    <string name="recordings_load_failed">Could not load recordings</string>
+    <string name="recordings_empty_title">No recordings</string>
+    <string name="recordings_empty_body">This camera has no stored recordings. Frigate keeps recordings only around events here, for the configured retention period.</string>
+    <string name="recordings_play_day">Play day</string>
+    <string name="recordings_play_hour">Play this hour</string>
+    <string name="recordings_hour_detail">%1$s recorded</string>
+    <plurals name="recordings_events">
+        <item quantity="one">%d event</item>
+        <item quantity="other">%d events</item>
+    </plurals>
+    <plurals name="recordings_day_summary">
+        <item quantity="one">Hours · %d event</item>
+        <item quantity="other">Hours · %d events</item>
+    </plurals>
+    <string name="playback_play">Play</string>
+    <string name="playback_pause">Pause</string>
+    <string name="playback_back_10">Back 10 seconds</string>
+    <string name="playback_forward_10">Forward 10 seconds</string>
+    <string name="playback_not_found">No recording is available for this period. It may never have been recorded, or it has expired.</string>
+    <string name="playback_unauthorized">The server refused the recording. Sign in again.</string>
+    <string name="playback_network">The recording could not be loaded. Check the connection and try again.</string>
 </resources>

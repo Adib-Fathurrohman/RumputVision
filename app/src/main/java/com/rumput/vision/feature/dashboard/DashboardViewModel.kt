@@ -8,7 +8,10 @@ import com.rumput.vision.domain.model.ConnectionState
 import com.rumput.vision.domain.model.ServerProfile
 import com.rumput.vision.domain.model.ServerStatus
 import com.rumput.vision.core.common.ticker
+import com.rumput.vision.domain.model.Event
+import com.rumput.vision.domain.model.EventFilter
 import com.rumput.vision.domain.repository.CameraMedia
+import com.rumput.vision.domain.repository.EventRepository
 import com.rumput.vision.domain.repository.ServerConnection
 import com.rumput.vision.domain.repository.ServerProfileRepository
 import com.rumput.vision.domain.repository.ServerRepository
@@ -24,7 +27,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
@@ -46,6 +51,7 @@ data class DashboardUiState(
     /** Changes every [SNAPSHOT_INTERVAL_MILLIS] while connected; previews reload when it changes. */
     val snapshotTick: Long = -1,
     val snapshotUrls: Map<String, String?> = emptyMap(),
+    val recentEvents: List<Event> = emptyList(),
 ) {
     val dashboardCameras: List<CameraWithStatus> get() = cameras.filter { it.camera.showOnDashboard }
 
@@ -59,7 +65,10 @@ class DashboardViewModel @Inject constructor(
     private val connection: ServerConnection,
     private val serverRepository: ServerRepository,
     private val cameraMedia: CameraMedia,
+    private val events: EventRepository,
 ) : ViewModel() {
+
+    fun eventThumbnailUrl(event: Event): String? = if (event.hasSnapshot) cameraMedia.eventThumbnailUrl(event.id) else null
 
     private val signIn = MutableStateFlow(SignInUiState())
 
@@ -74,9 +83,15 @@ class DashboardViewModel @Inject constructor(
         .transformLatest { connected ->
             while (connected) {
                 serverRepository.refresh()
+                events.fetchEvents(EventFilter(), beforeEpochMillis = null, limit = RECENT_EVENTS)
                 delay(REFRESH_INTERVAL_MILLIS)
             }
         }
+
+    /** New events announced over the realtime socket refresh the list right away. */
+    private val realtimeEvents: Flow<Nothing> = events.eventActivity
+        .onEach { events.fetchEvents(EventFilter(), beforeEpochMillis = null, limit = RECENT_EVENTS) }
+        .transform { }
 
     private val snapshotTicks: Flow<Long> =
         ticker(connection.state.map { it is ConnectionState.Connected }, SNAPSHOT_INTERVAL_MILLIS).onStart { emit(-1) }
@@ -100,13 +115,16 @@ class DashboardViewModel @Inject constructor(
                 )
             },
             snapshotTicks,
-        ) { state, tick ->
+            events.observeCachedEvents(EventFilter(), RECENT_EVENTS),
+        ) { state, tick, recent ->
             state.copy(
                 snapshotTick = tick,
                 snapshotUrls = state.cameras.associate { it.camera.name to cameraMedia.latestFrameUrl(it.camera.name, PREVIEW_HEIGHT) },
+                recentEvents = recent,
             )
         },
         polling,
+        realtimeEvents,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DashboardUiState())
 
     fun retry() = connection.reconnect()
@@ -126,5 +144,6 @@ class DashboardViewModel @Inject constructor(
         /** Frigate encodes each frame on request (~0.4–1.2 s on this server), so keep this well above that. */
         const val SNAPSHOT_INTERVAL_MILLIS = 10_000L
         const val PREVIEW_HEIGHT = 360
+        const val RECENT_EVENTS = 5
     }
 }

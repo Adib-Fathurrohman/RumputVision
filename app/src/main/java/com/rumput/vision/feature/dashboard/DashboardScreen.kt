@@ -52,6 +52,8 @@ import com.rumput.vision.domain.model.ConnectionState
 import com.rumput.vision.domain.model.UnauthorizedReason
 import com.rumput.vision.domain.repository.SignInResult
 import com.rumput.vision.core.design.component.CameraPreviewCard
+import com.rumput.vision.core.design.component.EventCard
+import com.rumput.vision.domain.model.Event
 import com.rumput.vision.core.design.component.ConnectionIndicator
 import com.rumput.vision.feature.settings.SwitchRow
 
@@ -61,6 +63,8 @@ fun DashboardScreen(
     onEditServer: (String) -> Unit,
     onOpenCamera: (String) -> Unit,
     onOpenLiveGrid: () -> Unit,
+    onOpenEvent: (String) -> Unit,
+    onOpenAllEvents: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -70,6 +74,9 @@ fun DashboardScreen(
         onEditServer = onEditServer,
         onOpenCamera = onOpenCamera,
         onOpenLiveGrid = onOpenLiveGrid,
+        onOpenEvent = onOpenEvent,
+        onOpenAllEvents = onOpenAllEvents,
+        eventThumbnail = viewModel::eventThumbnailUrl,
         onRetry = viewModel::retry,
         onSignIn = viewModel::signIn,
     )
@@ -82,6 +89,9 @@ fun DashboardContent(
     onEditServer: (String) -> Unit,
     onOpenCamera: (String) -> Unit,
     onOpenLiveGrid: () -> Unit,
+    onOpenEvent: (String) -> Unit,
+    onOpenAllEvents: () -> Unit,
+    eventThumbnail: (Event) -> String?,
     onRetry: () -> Unit,
     onSignIn: (String, Boolean) -> Unit,
 ) {
@@ -148,6 +158,22 @@ fun DashboardContent(
                                 }
                                 repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
                             }
+                        }
+                    }
+                    if (state.recentEvents.isNotEmpty()) {
+                        item {
+                            SectionHeader(stringResource(R.string.dashboard_recent_events)) {
+                                TextButton(onClick = onOpenAllEvents) { Text(stringResource(R.string.dashboard_all_events)) }
+                            }
+                        }
+                        val names = state.cameras.associate { it.camera.name to it.camera.displayName }
+                        items(state.recentEvents, key = { "event_${it.id}" }) { event ->
+                            EventCard(
+                                event = event,
+                                cameraName = names[event.camera] ?: event.camera,
+                                thumbnailUrl = eventThumbnail(event),
+                                onClick = { onOpenEvent(event.id) },
+                            )
                         }
                     }
                     if (state.serverStatus != null) {

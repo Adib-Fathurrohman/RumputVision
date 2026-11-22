@@ -54,6 +54,10 @@ abstract class FakeRepositoryModule {
         @Provides @Singleton fun tester(): ConnectionTester = FakeConnectionTester()
 
         @Provides @Singleton fun media(): com.rumput.vision.domain.repository.CameraMedia = com.rumput.vision.testing.FakeCameraMedia()
+
+        @Provides @Singleton fun events(): com.rumput.vision.domain.repository.EventRepository = com.rumput.vision.testing.FakeEventRepository()
+
+        @Provides @Singleton fun recordings(): com.rumput.vision.domain.repository.RecordingRepository = com.rumput.vision.testing.FakeRecordingRepository()
     }
 }
 
@@ -63,6 +67,9 @@ abstract class FakeStreamingModule {
     companion object {
         @Provides @Singleton
         fun players(): com.rumput.vision.core.streaming.CameraStreamPlayerFactory = com.rumput.vision.testing.FakeStreamPlayerFactory()
+
+        @Provides @Singleton
+        fun recordingPlayers(): com.rumput.vision.core.streaming.RecordingPlayerFactory = com.rumput.vision.testing.FakeRecordingPlayerFactory()
     }
 }
 
@@ -173,5 +180,21 @@ class AppNavigationTest {
         composeRule.onNodeWithText("garasi_main").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Back").performClick()
         composeRule.onNodeWithTag("screen_camera_detail").assertIsDisplayed()
+    }
+
+    @javax.inject.Inject lateinit var eventRepository: com.rumput.vision.domain.repository.EventRepository
+
+    @Test
+    fun eventsTab_opensEventDetail() {
+        hiltRule.inject()
+        addServerThroughOnboarding()
+        (eventRepository as com.rumput.vision.testing.FakeEventRepository).remote =
+            listOf(com.rumput.vision.testing.event("e1", camera = "garasi"))
+
+        composeRule.onNodeWithTag("nav_events").performClick()
+        composeRule.onNodeWithTag("screen_events").assertIsDisplayed()
+        composeRule.onNodeWithTag("event_e1").performClick()
+        composeRule.onNodeWithTag("screen_event_detail").assertIsDisplayed()
+        composeRule.onNodeWithTag("event_play_clip").assertIsDisplayed()
     }
 }

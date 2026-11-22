@@ -1,5 +1,6 @@
 package com.rumput.vision.data.repository
 
+import com.rumput.vision.core.streaming.MediaCallFactoryProvider
 import com.rumput.vision.core.streaming.StreamClientProvider
 import com.rumput.vision.data.remote.FrigateConnectionTester
 import com.rumput.vision.data.remote.FrigateSession
@@ -7,6 +8,8 @@ import com.rumput.vision.data.remote.media.FrigateCameraMedia
 import com.rumput.vision.domain.repository.CameraMedia
 import com.rumput.vision.domain.repository.AppPreferencesRepository
 import com.rumput.vision.domain.repository.ConnectionTester
+import com.rumput.vision.domain.repository.EventRepository
+import com.rumput.vision.domain.repository.RecordingRepository
 import com.rumput.vision.domain.repository.ServerConnection
 import com.rumput.vision.domain.repository.ServerProfileRepository
 import com.rumput.vision.domain.repository.ServerRepository
@@ -38,4 +41,13 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindStreamClientProvider(impl: FrigateSession): StreamClientProvider
+
+    @Binds
+    abstract fun bindMediaCallFactoryProvider(impl: FrigateSession): MediaCallFactoryProvider
+
+    @Binds
+    abstract fun bindEventRepository(impl: FrigateEventRepository): EventRepository
+
+    @Binds
+    abstract fun bindRecordingRepository(impl: FrigateRecordingRepository): RecordingRepository
 }

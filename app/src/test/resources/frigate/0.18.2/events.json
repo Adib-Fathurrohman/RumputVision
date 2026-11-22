@@ -1,0 +1,74 @@
+[
+ {
+  "id": "1795344966.987805-poqbbi",
+  "camera": "ruang_belakang",
+  "label": "orang_terdeteksi",
+  "zones": [],
+  "start_time": 1795344961.987805,
+  "end_time": 1795344996.987805,
+  "has_clip": true,
+  "has_snapshot": true,
+  "plus_id": null,
+  "retain_indefinitely": false,
+  "sub_label": null,
+  "top_score": null,
+  "false_positive": null,
+  "box": null,
+  "data": {
+   "type": "api",
+   "score": 0,
+   "top_score": 0,
+   "snapshot_clean": true,
+   "draw": {}
+  },
+  "thumbnail": null
+ },
+ {
+  "id": "1795344965.139085-f3972l",
+  "camera": "ruang_tengah",
+  "label": "orang_terdeteksi",
+  "zones": [],
+  "start_time": 1795344960.139085,
+  "end_time": 1795344995.139085,
+  "has_clip": true,
+  "has_snapshot": true,
+  "plus_id": null,
+  "retain_indefinitely": false,
+  "sub_label": null,
+  "top_score": null,
+  "false_positive": null,
+  "box": null,
+  "data": {
+   "type": "api",
+   "score": 0,
+   "top_score": 0,
+   "snapshot_clean": true,
+   "draw": {}
+  },
+  "thumbnail": null
+ },
+ {
+  "id": "1795344856.69073-pncboc",
+  "camera": "ruang_tengah",
+  "label": "orang_terdeteksi",
+  "zones": [],
+  "start_time": 1795344851.69073,
+  "end_time": 1795344886.69073,
+  "has_clip": true,
+  "has_snapshot": true,
+  "plus_id": null,
+  "retain_indefinitely": false,
+  "sub_label": null,
+  "top_score": null,
+  "false_positive": null,
+  "box": null,
+  "data": {
+   "type": "api",
+   "score": 0,
+   "top_score": 0,
+   "snapshot_clean": true,
+   "draw": {}
+  },
+  "thumbnail": null
+ }
+]

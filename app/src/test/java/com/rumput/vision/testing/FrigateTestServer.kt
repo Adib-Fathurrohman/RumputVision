@@ -110,7 +110,20 @@ class FakeFrigateServer(
             "/api/stats" -> json(statsOverride ?: Fixtures.read("stats.json"))
             "/api/logout" -> MockResponse.Builder().code(303).addHeader("Location", "/login").build()
             "/api/garasi/latest.webp" -> MockResponse.Builder().code(200).addHeader("Content-Type", "image/webp").body("RIFF").build()
-            else -> MockResponse.Builder().code(404).body("""{"detail":"Not Found"}""").build()
+            "/api/events" -> json(Fixtures.read("events.json"))
+            "/api/labels" -> json("[\"orang_terdeteksi\"]")
+            else -> when {
+                path.startsWith("/api/events/") -> {
+                    val id = path.removePrefix("/api/events/")
+                    val events = com.rumput.vision.core.network.FrigateJson.parseToJsonElement(Fixtures.read("events.json")) as kotlinx.serialization.json.JsonArray
+                    events.firstOrNull { (it as kotlinx.serialization.json.JsonObject)["id"].toString().trim('"') == id }
+                        ?.let { json(it.toString()) }
+                        ?: MockResponse.Builder().code(404).body("\"Event not found\"").build()
+                }
+                path.endsWith("/recordings/summary") -> json(Fixtures.read("recordings_summary_garasi.json"))
+                path.endsWith("/recordings") -> json(Fixtures.read("recordings_segments.json"))
+                else -> MockResponse.Builder().code(404).body("""{"detail":"Not Found"}""").build()
+            }
         }
     }
 

@@ -115,6 +115,20 @@ CameraPreviewCard / CameraRow / detail ──▶ CameraSnapshot (Coil AsyncImage
 - Navigation uses a bottom bar on phones in portrait and a side rail on
   short (landscape phone) or wide windows.
 
+## Events, recordings and realtime (Phase 5)
+
+- `FrigateEventRepository`: pages from `/api/events` (filters: cameras, labels, time range), caches the
+  latest 300 events per profile in Room (`events`, DB v4) for offline display, and turns realtime
+  activity into a refresh signal.
+- `FrigateRealtime`: `/ws` as a `SharedFlow`, open only while collected and connected, reconnecting
+  with backoff. It uses the dedicated WebSocket dispatcher.
+- `FrigateRecordingRepository`: day/hour summaries in the device time zone, plus segments.
+- `RecordingPlayer` (Media3 HLS over the session's authenticated client) and `RecordingTimeline`
+  (playlist position ↔ wall clock).
+- Screens: Events (filters, day-grouped timeline, paging), Event detail (snapshot, metadata, play
+  recording, live view), Recordings (camera → day → hour), Playback (wall-clock time, recorded-segment
+  strip, ±10 s, seek), and Recent events on Home.
+
 ## Notifications (future)
 
 ```

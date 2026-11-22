@@ -115,8 +115,8 @@ Rate limiting: `auth.failed_login_rate_limit` (unset here).
 
 | Method & path | Status | Notes |
 |---|---|---|
-| `GET /api/events` | Verified | Query: `cameras`, `labels`, `zones`, `after`, `before` (epoch seconds), `limit`, `offset`, `has_clip`, `has_snapshot`, `in_progress`, `sort`, … (comma-separated lists). |
-| `GET /api/events/{id}` | Spec | `EventResponse` |
+| `GET /api/events` | Verified + used | Query: `cameras`, `labels`, `zones`, `after`, `before` (epoch seconds), `limit`, `offset`, `has_clip`, `has_snapshot`, `in_progress`, `sort`, … (comma-separated lists). Newest first; the app pages with `before=<start_time of the last event>` (verified) in pages of 50. |
+| `GET /api/events/{id}` | Verified + used | `EventResponse`; unknown id → 404 `"Event not found"`. |
 | `GET /api/events/{id}/snapshot.jpg` | Verified | Query: `bbox`, `crop`, `height`, `quality`, `timestamp`. |
 | `GET /api/events/{id}/thumbnail.webp` | Verified | Small (~10 KB). |
 | `GET /api/events/{id}/clip.mp4` | Verified | `video/mp4`, progressive. Optional `padding`. |
@@ -172,7 +172,7 @@ to get the URL: `/clips/review/thumb-<camera>-<id>.webp` (verified,
 | `GET /api/{camera}/recordings/summary?timezone=` | Verified | `[{"day","events","hours":[{"hour":"04","events","motion","objects","duration"}]}]` |
 | `GET /api/{camera}/recordings?after=&before=` | Verified | Segments: `id`, `start_time`, `end_time`, `duration`, `segment_size` (MB), `motion`, `objects`. |
 | `GET /api/recordings/unavailable?cameras=&after=&before=&scale=` | Verified | Gaps: `[{"start_time","end_time"}]`. |
-| `GET /vod/{camera}/start/{start}/end/{end}/index.m3u8` | Verified | **HLS VOD** with fMP4 (`#EXT-X-MAP init-v1.mp4`, `seg-N-v1.m4s`), `#EXT-X-PLAYLIST-TYPE:VOD`. Seekable. Used for recording playback. |
+| `GET /vod/{camera}/start/{start}/end/{end}/index.m3u8` | Verified | **HLS VOD** with fMP4 (`#EXT-X-MAP init-v1.mp4`, `seg-N-v1.m4s`), `#EXT-X-PLAYLIST-TYPE:VOD`. Seekable. Used for recordings and event clips. **No recordings in range → 404** (HTML from nginx; the `/api/vod/...` JSON variant says `"No recordings found."`). Only recorded segments are concatenated (gaps take no time). The playlist is **trimmed exactly at the requested end but not at the start**: it begins at the earlier segment/keyframe (measured: 48.93 s for a 45 s window that started 4 s into a segment). The app maps wall-clock time by anchoring at the end (`RecordingTimeline`). |
 | `GET /api/{camera}/start/{start}/end/{end}/clip.mp4` | Spec | Export as MP4 (download). |
 | `GET /api/preview/{camera}/start/{start}/end/{end}` | Spec | Low-res preview files for timeline scrubbing. |
 
@@ -200,7 +200,14 @@ Stream codecs on this server (from `/api/go2rtc/streams`):
 
 ## Realtime WebSocket
 
-`WS /ws` — Verified. Messages are JSON `{"topic": string, "payload": any}`.
+`WS /ws` — Verified and used (Phase 5). Messages are JSON `{"topic": string, "payload": any}`.
+The client sends `{"topic":"onConnect","payload":""}` after connecting. Topics seen in 60 s on 0.18.2:
+`<camera>/status/detect|record` (`online`), `<camera>/motion` (`ON`/`OFF`), `camera_activity`,
+`stats`, `reviews` (payload is a JSON **string**: `{"type":"new|update|end","before":{…},"after":{…}}`),
+`<camera>/review_status`, `model_state`, `profile/state`, `birdseye_layout`, `audio_detections`.
+
+The app uses `events` and `reviews` messages only as hints to re-fetch `/api/events` (debounced 1 s,
+de-duplicated by topic + id + type); it never trusts payload contents as data.
 Topics mirror the MQTT topics without the `frigate/` prefix (MQTT itself is
 disabled on this server). Observed:
 
@@ -208,7 +215,5 @@ disabled on this server). Observed:
 {"topic": "garasi/status/detect", "payload": "online"}
 ```
 
-Not used yet. Planned use (later phase; verify each topic before relying on it): camera
-status (`<camera>/status/<role>`), `events`, `reviews`, `stats`,
-`camera_activity`. Reconnect with exponential backoff and de-duplicate by
-event or review `id` plus `type`.
+Connection: open only while a screen observes it and the server is connected (closes 5 s after the
+last observer); reconnect with exponential backoff 1 s → 30 s, reset after each successful open.
