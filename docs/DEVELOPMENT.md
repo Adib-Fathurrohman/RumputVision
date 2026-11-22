@@ -159,6 +159,30 @@ over existing installs.
 6. Check there is no app output in logcat (`adb logcat | grep RumputVision` prints nothing for a
    release build) and that the crash buffer is empty (`adb logcat -b crash -d`).
 
+### Publishing a GitHub release
+
+The release key is `~/keys/rumput-vision.jks`, with its password in the git-ignored
+`keystore.properties`. Keep a backup of **both** somewhere safe (a password manager, for example).
+Every update must be signed with this key, or Android refuses to install it over the old version.
+
+1. Bump `versionCode` (+1) and `versionName` in `app/build.gradle.kts`, then commit and push.
+2. Build, verify and name the APK:
+
+   ```bash
+   ./gradlew clean :app:assembleRelease
+   "$ANDROID_HOME"/build-tools/37.0.0/apksigner verify --print-certs app/build/outputs/apk/release/app-release.apk
+   mkdir -p build/dist && cp app/build/outputs/apk/release/app-release.apk build/dist/RumputVision-<version>.apk
+   shasum -a 256 build/dist/RumputVision-<version>.apk
+   ```
+
+3. Publish (creates the tag on the pushed commit):
+
+   ```bash
+   gh release create v<version> build/dist/RumputVision-<version>.apk --title "Rumput Vision <version>" --notes-file <notes.md>
+   ```
+
+   Put the SHA-256 checksum in the notes.
+
 ## Conventions
 
 - Dependencies are declared only in `gradle/libs.versions.toml`.
