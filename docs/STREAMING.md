@@ -164,6 +164,19 @@ other cells show refreshing stills.
    dedicated dispatcher. Otherwise four streams would leave one of OkHttp's 5 per-host slots for every
    API call and snapshot.
 
+## Measurements (Phase 6, emulator, 2026-11-22)
+
+Emulator `Medium_Phone_API_36.1` (arm64, software video decoding) on the same LAN, against the real server.
+The phone was not attached, so these are not phone numbers.
+
+| Measure | Result | Method |
+|---|---|---|
+| Glass-to-glass latency, Sub (704×576) | **≈ 1.5 s** | Four screenshots of Garasi; the device clock read just before and after each capture, against the camera's on-screen clock. The intervals intersect at 1.44–1.6 s. Assumes the camera clock is right (it agreed with the device to within the stream delay). |
+| Glass-to-glass latency, Main (2560×1440) | 2.0–3.6 s | Same method, three samples. Includes software decoding of 1440p on the emulator, so a phone with a hardware decoder should do better. |
+| Time to first frame, Main | 3.8 s from opening live view | Media3 `EventLogger` (debug build): `renderedFirstFrame` eventTime. Dominated by the keyframe interval (see finding 3). |
+| Time to first frame, Sub | 1.8 s after switching from Main | Same. |
+| Release cold start (`am start -W` TotalTime) | 300–415 ms after ART compiled the app; 260–1,280 ms straight after install | Six runs each, signed R8 build, profile configured. Time to first activity frame, not to server data. |
+
 ### Still to verify on a device
 
 - [x] H.264 and H.265 hardware decoding.
@@ -172,6 +185,6 @@ other cells show refreshing stills.
 - [x] Four simultaneous decoders start.
 - [x] 4-stream grid plays live (with the SMOOTH profile; occasional stalls remain on this 2.4 GHz link).
 - [x] WifiLock effect (none measured; removed).
-- [ ] Glass-to-glass latency measurement.
+- [x] Glass-to-glass latency on the emulator (≈ 1.5 s Sub). Repeat on the phone.
 - [ ] Over Tailscale on mobile data.
 - [ ] Battery and thermal behaviour over a long session.

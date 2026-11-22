@@ -119,7 +119,7 @@ CameraPreviewCard / CameraRow / detail ──▶ CameraSnapshot (Coil AsyncImage
 
 - `FrigateEventRepository`: pages from `/api/events` (filters: cameras, labels, time range), caches the
   latest 300 events per profile in Room (`events`, DB v4) for offline display, and turns realtime
-  activity into a refresh signal.
+  activity into a refresh signal, only while the "In-app event updates" setting is on.
 - `FrigateRealtime`: `/ws` as a `SharedFlow`, open only while collected and connected, reconnecting
   with backoff. It uses the dedicated WebSocket dispatcher.
 - `FrigateRecordingRepository`: day/hour summaries in the device time zone, plus segments.
@@ -127,7 +127,16 @@ CameraPreviewCard / CameraRow / detail ──▶ CameraSnapshot (Coil AsyncImage
   (playlist position ↔ wall clock).
 - Screens: Events (filters, day-grouped timeline, paging), Event detail (snapshot, metadata, play
   recording, live view), Recordings (camera → day → hour), Playback (wall-clock time, recorded-segment
-  strip, ±10 s, seek), and Recent events on Home.
+  strip, ±10 s, seek), and Recent events on Home. Playback loads once the session is connected, so
+  it also works when opened offline or while connecting.
+
+## Diagnostics (Phase 6)
+
+`AppLogger` warnings and errors (already redacted) also go to `DiagnosticsLog`, an in-memory ring
+of 50 entries kept in every build type. `DiagnosticsViewModel` combines it with the active profile,
+connection state, network status, server status, cameras and preferences into a
+`DiagnosticsSnapshot`; `DiagnosticsReport` turns that into the plain text behind
+**Copy diagnostics**, with server addresses, username and secrets left out (see `SECURITY.md` §2.2).
 
 ## Notifications (future)
 

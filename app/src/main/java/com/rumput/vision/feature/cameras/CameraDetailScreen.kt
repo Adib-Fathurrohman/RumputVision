@@ -101,19 +101,26 @@ private fun DetailBody(item: CameraWithStatus, state: CameraDetailUiState, modif
                 Modifier.padding(horizontal = spacing.gutter, vertical = spacing.md),
                 verticalArrangement = Arrangement.spacedBy(spacing.sm),
             ) {
+                val connected = state.connection is ConnectionState.Connected
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
                     CameraStatusIndicator(item.status)
-                    Text(
-                        stringResource(R.string.camera_snapshot_note),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    // Stills only refresh while connected.
+                    if (connected) {
+                        Text(
+                            stringResource(R.string.camera_snapshot_note),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
-                if (item.isCached) WarningText(stringResource(R.string.cameras_cached_notice))
-                if (state.connection is ConnectionState.Unreachable) WarningText(stringResource(R.string.camera_detail_offline))
+                // One notice: "unreachable" already says the information is the last known state.
+                when {
+                    state.connection is ConnectionState.Unreachable -> WarningText(stringResource(R.string.camera_detail_offline))
+                    item.isCached -> WarningText(stringResource(R.string.cameras_cached_notice))
+                }
                 Button(
                     onClick = { onOpenLiveView(camera.name) },
-                    enabled = item.status != CameraStatus.DISABLED && state.connection is ConnectionState.Connected,
+                    enabled = item.status != CameraStatus.DISABLED && connected,
                     modifier = Modifier.fillMaxWidth().testTag("open_live_view"),
                 ) {
                     Text(stringResource(R.string.camera_live_view))

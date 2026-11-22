@@ -31,6 +31,9 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.util.TimeZone
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import com.rumput.vision.domain.repository.AppPreferencesRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,6 +43,7 @@ class FrigateEventRepository @Inject constructor(
     private val profiles: ServerProfileRepository,
     private val eventDao: EventDao,
     realtime: FrigateRealtime,
+    preferences: AppPreferencesRepository,
 ) : EventRepository {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -97,13 +101,17 @@ class FrigateEventRepository @Inject constructor(
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Boolean>) = size > SEEN_SIZE
     }
 
+    /** Off in Settings ("In-app event updates") means no `/ws` socket at all, not just ignored messages. */
     @OptIn(FlowPreview::class)
-    override val eventActivity: Flow<Unit> = realtime.messages
-        .mapNotNull { activityKey(it) }
-        // The same event/review is often announced several times (new, update, end); act once per change.
-        .mapNotNull { key -> synchronized(seen) { key.takeIf { seen.put(it, true) == null } } }
-        .debounce(ACTIVITY_DEBOUNCE_MILLIS)
-        .map { }
+    override val eventActivity: Flow<Unit> = whileEnabled(
+        preferences.preferences.map { it.inAppEventUpdates },
+        realtime.messages
+            .mapNotNull { activityKey(it) }
+            // The same event/review is often announced several times (new, update, end); act once per change.
+            .mapNotNull { key -> synchronized(seen) { key.takeIf { seen.put(it, true) == null } } }
+            .debounce(ACTIVITY_DEBOUNCE_MILLIS)
+            .map { },
+    )
 
     private companion object {
         const val CACHE_SIZE = 300
@@ -113,6 +121,11 @@ class FrigateEventRepository @Inject constructor(
 }
 
 private val activityJson = Json { ignoreUnknownKeys = true }
+
+/** Collects [source] only while [enabled] is true; switching off cancels the collection. */
+@OptIn(ExperimentalCoroutinesApi::class)
+internal fun <T> whileEnabled(enabled: Flow<Boolean>, source: Flow<T>): Flow<T> =
+    enabled.distinctUntilChanged().flatMapLatest { on -> if (on) source else emptyFlow() }
 
 /** `topic:id:type` for event/review messages, else null. Payloads are hints, never trusted as data. */
 internal fun activityKey(message: RealtimeMessage): String? {

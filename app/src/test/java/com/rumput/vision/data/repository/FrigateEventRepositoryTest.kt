@@ -16,6 +16,8 @@ import com.rumput.vision.testing.FakeFrigateServer
 import com.rumput.vision.testing.profile
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import com.rumput.vision.testing.FakeAppPreferencesRepository
+import kotlinx.coroutines.launch
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -43,7 +45,7 @@ class FrigateEventRepositoryTest {
         }
         harness.await<ConnectionState.Connected>()
         val realtime = FrigateRealtime(harness.session, harness.session, kotlinx.coroutines.GlobalScope) { 1_000 }
-        repository = FrigateEventRepository(harness.session, harness.profiles, db.eventDao(), realtime)
+        repository = FrigateEventRepository(harness.session, harness.profiles, db.eventDao(), realtime, FakeAppPreferencesRepository())
     }
 
     @After
@@ -95,6 +97,30 @@ class FrigateEventRepositoryTest {
     fun `unknown event is a 404`() = runBlocking {
         val result = repository.getEvent("nope")
         assertTrue(result is FrigateResult.Failure)
+    }
+
+    @Test
+    fun `realtime is collected only while in-app updates are enabled`() = runBlocking {
+        val enabled = kotlinx.coroutines.flow.MutableStateFlow(false)
+        var subscriptions = 0
+        val source = kotlinx.coroutines.flow.flow {
+            subscriptions++
+            emit(1)
+            kotlinx.coroutines.awaitCancellation()
+        }
+        val received = mutableListOf<Int>()
+        val job = launch(kotlinx.coroutines.Dispatchers.Unconfined) { whileEnabled(enabled, source).collect { received += it } }
+
+        assertEquals(0, subscriptions)
+        enabled.value = true
+        assertEquals(1, subscriptions)
+        enabled.value = true
+        assertEquals("no resubscribe on the same value", 1, subscriptions)
+        enabled.value = false
+        enabled.value = true
+        assertEquals(2, subscriptions)
+        assertEquals(listOf(1, 1), received)
+        job.cancel()
     }
 
     @Test

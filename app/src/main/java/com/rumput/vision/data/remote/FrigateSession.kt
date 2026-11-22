@@ -2,6 +2,7 @@ package com.rumput.vision.data.remote
 
 import com.rumput.vision.core.common.ApplicationScope
 import com.rumput.vision.core.common.Clock
+import com.rumput.vision.core.logging.AppLogger
 import com.rumput.vision.core.network.ForegroundMonitor
 import com.rumput.vision.core.network.NetworkMonitor
 import com.rumput.vision.core.network.NetworkStatus
@@ -138,6 +139,7 @@ class FrigateSession @Inject constructor(
             // Keep the last known state while in the background; nothing is done until the app returns.
             !trigger.foreground -> Unit
             !trigger.network.isConnected -> {
+                if (_state.value !is ConnectionState.Unreachable) AppLogger.w { "Device has no network" }
                 active = null
                 _state.value = ConnectionState.Unreachable(FrigateError.Unreachable(NetworkFailure.NO_NETWORK))
             }
@@ -185,6 +187,7 @@ class FrigateSession @Inject constructor(
             }
         }
         val (candidate, probedVersion) = chosen ?: run {
+            AppLogger.w { "No endpoint reachable (${candidates.joinToString { it.route.name }}): $lastError" }
             _state.value = ConnectionState.Unreachable(lastError)
             return@withLock
         }
@@ -194,6 +197,7 @@ class FrigateSession @Inject constructor(
 
         if (profile.authMode == AuthMode.FRIGATE_LOGIN) {
             ensureToken(profile, candidate.url)?.let { reason ->
+                AppLogger.w { "Sign-in needed on ${candidate.route}: $reason" }
                 _state.value = ConnectionState.Unauthorized(reason)
                 return@withLock
             }
@@ -293,6 +297,7 @@ class FrigateSession @Inject constructor(
             // HTTP errors from a reachable server do not mean the connection is gone.
             cause is HttpException || error == FrigateError.InvalidResponse -> Unit
             else -> {
+                AppLogger.w { "Connection lost on ${endpoint.route}: $error" }
                 active = null
                 _state.value = ConnectionState.Unreachable(error)
             }

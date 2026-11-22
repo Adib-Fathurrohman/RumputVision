@@ -171,6 +171,19 @@ the iGPU even though detection is disabled. Measured from `/api/stats`, three sa
 Recording was verified afterwards (fresh segments for all four cameras). Side effect: event snapshots
 and `latest.*` images are now 1024×576. To revert, restore the backup and `docker restart frigate`.
 
+### Phase 6 release review (2026-11-22)
+
+| Check | Result |
+|---|---|
+| Keystore cipher on a real Keystore | Passing instrumented test (emulator, API 36): non-exportable AES-256 key, random IV, AAD binding, tamper rejection, no plaintext on disk. StrongBox path not exercised (the emulator has none). |
+| Release logging | Signed R8 build: zero `RumputVision` lines in logcat during a full walkthrough. |
+| Permissions | `INTERNET`, `ACCESS_NETWORK_STATE` only. `WAKE_LOCK`, merged in by media3-exoplayer, is removed (`tools:node="remove"`); the app never calls `setWakeMode`. |
+| Exported components | Launcher activity; androidx `ProfileInstallReceiver` (guarded by `android.permission.DUMP`). |
+| Backup | `allowBackup=false`, data extraction rules exclude everything. |
+| Network security config | System CAs only; no user CAs; cleartext allowed at the platform level, restricted by `ServerUrlPolicy` (§2.3). |
+| Clipboard | Only the redacted diagnostics report, on explicit tap. |
+| Images and video on disk | None: Coil memory cache only; no media cache for live or VOD. |
+
 ### Things that were *not* verified
 
 - Login, token refresh and roles on port 8971 could not be tested because
@@ -212,6 +225,15 @@ restored, so backed-up ciphertext would be useless anyway.
   are redacted (`core/logging/Redactor.kt`, unit-tested).
 - Passwords are never written to logs, crash messages or UI state that
   survives process death (`SavedStateHandle` never holds the password).
+- Release builds write nothing to logcat (verified on the signed R8 build).
+  Warnings and errors are kept in memory only (`DiagnosticsLog`, last 50,
+  already redacted) for the diagnostics screen; nothing is written to disk.
+- **Copy diagnostics** (Settings → About and diagnostics) puts a plain-text
+  report on the clipboard only when the user taps it. The report never contains
+  passwords, tokens or the username, and server addresses are reduced to scheme,
+  kind of host and port (`http://<private network>:80`). Log lines are masked
+  again (URL hosts, IPv4/IPv6 addresses, host names). Covered by
+  `DiagnosticsReportTest`.
 
 ### 2.3 Transport policy
 

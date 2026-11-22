@@ -4,10 +4,12 @@ Legend: **Not started** · **In progress** · **Implemented** (code exists,
 not automatically tested) · **Tested** (automated test executed and passing)
 · **Blocked**
 
-Last updated: 2026-11-22 (Phase 3). Test run: `./gradlew :app:testDebugUnitTest`.
-105 tests, 0 failures, 1 skipped (the opt-in live test). Lint: 0 errors.
-Manual end-to-end check on the emulator (API 36.1) against the real Frigate
-0.18.2 over the LAN, in portrait and landscape.
+Last updated: 2026-11-22 (Phase 6). Test run: `./gradlew :app:testDebugUnitTest`:
+151 tests, 0 failures, 1 skipped (the opt-in live test). Instrumented:
+`./gradlew :app:connectedDebugAndroidTest` on the emulator (API 36): 4 tests, 0 failures.
+Lint: 0 errors (1 warning: the Compose BOM held back on purpose).
+Manual end-to-end checks on the emulator (API 36.1) and an Infinix X6731B
+(Android 14) against the real Frigate 0.18.2 over the LAN.
 
 ## Phase 0 — Audit and discovery: done
 
@@ -31,7 +33,7 @@ Manual end-to-end check on the emulator (API 36.1) against the real Frigate
 | Server profile model | Tested | |
 | URL and transport security policy | Tested | `ServerUrlPolicyTest`. |
 | Profile create/edit/delete/activate | Tested | Use case, ViewModel, repository (real Room) tests. |
-| Encrypted credential storage | Tested (logic) | Store logic tested with a fake cipher. **The Keystore cipher itself is untested.** It needs an instrumented test on a device. |
+| Encrypted credential storage | Tested | Store logic with a fake cipher (JVM), and the real Keystore cipher plus store in the instrumented `KeystoreCredentialStoreTest` (emulator). StrongBox path not exercised. |
 | App preferences (DataStore) | Tested | |
 | Log redaction | Tested | |
 | Backup exclusion | Implemented | Manifest + rules; not tested. |
@@ -43,7 +45,7 @@ Manual end-to-end check on the emulator (API 36.1) against the real Frigate
 | OkHttp/Retrofit client, DTOs from the real 0.18.2 responses | Tested | Sanitized recorded fixtures; live test against the real server passed. |
 | Transport guard (no credentials/login over HTTP, no HTTP to public hosts, no redirects) | Tested | |
 | Login, Bearer token, refresh via re-issued cookie, re-auth on 401, logout | Tested against an HTTPS test server | **Blocked** for real-server verification until port 8971 is reachable over HTTPS (SECURITY.md S1/S3). |
-| Encrypted storage of token and optional password | Tested (logic) | Keystore cipher itself still needs an on-device test. |
+| Encrypted storage of token and optional password | Tested | Including the real Keystore (instrumented test). |
 | Endpoint selection: local/remote, Wi-Fi vs mobile order, debounced network changes | Tested | Verified on emulator: airplane mode → "No network", then automatic reconnect. **Remote/Tailscale path not tried on a real network** (no remote URL configured yet). |
 | Connection state machine (connected, unauthorized reasons, unreachable reasons) | Tested | |
 | Anonymous-admin (auth bypass) detection | Tested + verified on the real server | Shown on Home and in the connection test. |
@@ -97,25 +99,39 @@ Verified on the emulator against the real server (Frigate 0.18.2), 2026-11-22.
 | Recordings: camera → day → hour, recorded time per hour | Tested + verified on server | |
 | Playback: HLS VOD, play/pause, seek, ±10 s, wall-clock time, segment strip | Tested + verified on server | Wall clock matched the camera overlay to the second. |
 | Expired / missing recordings | Implemented | A 404 shows a clear message; verified with curl, not yet seen in the app. |
+| Playback opened offline or while connecting | Tested + verified on emulator | Fixed in Phase 6: it used to stay black. Now it shows progress or "cannot be reached" with Retry, and loads by itself once connected. |
 | Realtime `/ws` (backoff, dedupe, only while observed) | Tested + verified on server | Server log shows the app's `/ws` opening and closing with screen use. |
 | Recent events on Home | Implemented + verified on server | |
 | Download / export clips | Not started | |
 
-## Phase 6 — Reliability and release: not started
+## Phase 6 — Reliability and release: done (phone and Tailscale re-checks pending)
+
+| Item | Status | Notes |
+|---|---|---|
+| Signed R8 release build | Verified on emulator | 5.3 MB. Full walkthrough (add server, test connection, Home, live grid, live view, event, recording playback) with zero crashes and zero app log lines. Signed with a throwaway key; the real key is the owner's (see `DEVELOPMENT.md`). |
+| Keystore instrumented test | Tested | `KeystoreCredentialStoreTest`, 4 tests on the emulator. |
+| About and diagnostics screen | Tested (report) + verified on emulator | Connection, network, Frigate version, cameras online, recent warnings, **Copy diagnostics** with addresses, username and secrets left out (`DiagnosticsReportTest`). |
+| In-memory warning log | Tested | Last 50 warnings/errors, redacted; also in release, never on disk or logcat. Connection failures and offline now record a warning. |
+| Offline walkthrough (airplane mode) | Verified on emulator | All five tabs, camera detail, event detail and playback show cached data or a clear message; no crash. Two fixes: playback waits for the server (above) and camera detail shows a single offline notice and no "refreshed every few seconds" caption while offline. |
+| Startup and live latency | Measured on emulator | Cold start 300–415 ms; Sub ≈ 1.5 s glass-to-glass; details in `STREAMING.md`. Not yet repeated on the phone. |
+| "In-app event updates" switch | Tested + verified on server | Was ignored before; see Notifications. |
+| Security review | Done | `SECURITY.md` "Phase 6 release review". Removed the unused `WAKE_LOCK` permission merged in by media3. |
+| Tailscale / mobile data | Not verified | Needs the phone on mobile data with Tailscale on. |
+| Battery and thermal over a long session | Not verified | |
 
 ## Notifications
 
 | Feature | Status | Notes |
 |---|---|---|
 | Notification preferences | Tested | Stored in DataStore. The push toggle is visibly disabled. |
-| In-app event updates | Not started | Depends on Phase 2 `/ws`. |
+| In-app event updates | Tested + verified on server | Realtime `/ws` (Phase 5). Fixed in Phase 6: the Settings switch was not read; now "off" means no `/ws` socket at all (server log showed none while Events was open). |
 | Push via FCM relay | Not started | Separate service; MQTT is disabled on the server. |
 
 ## Known limitations
 
-- **The Garasi camera's clock is one hour ahead** (its overlay showed 11:08 for footage recorded at
-  10:08 WIB, and the other cameras match). Recording times in the app come from Frigate and are
-  correct; fix the camera's time zone (probably set to UTC+8 instead of +7).
+- The Garasi camera's clock was one hour ahead earlier on 2026-11-22 (overlay 11:08 for footage
+  recorded at 10:08 WIB). In the Phase 6 check at 18:57 its live overlay matched the device clock, so it
+  appears fixed; recording times in the app come from Frigate either way.
 - Home Assistant creates alarms very often (22 in 6 minutes on 2026-11-22), so the event list grows
   quickly; consider tuning the automations.
 
@@ -127,7 +143,11 @@ Verified on the emulator against the real server (Frigate 0.18.2), 2026-11-22.
   camera/network issue on the server side, shown as reported.
 
 - Compose BOM is held at 2026.09.00 until SDK platform 37.1 is installed.
-- Events and Recordings tabs still show "not available yet" placeholders.
+- Downloading or exporting clips is not implemented.
+- Push notifications are not implemented (needs a relay; MQTT is disabled on the server).
+- Login against Frigate's authenticated port (8971) is tested only against a test server, because the
+  real server exposes no HTTPS (SECURITY.md S1/S3).
+- The diagnostics warning list lives in memory, so it starts empty after the app process restarts.
 - The app shows Frigate's `connection_quality` value as reported (e.g. "unusable"
   while the camera still delivers frames).
 - The light theme is defined but not selectable.

@@ -6,7 +6,14 @@ import com.rumput.vision.core.streaming.PlaybackState
 import com.rumput.vision.domain.model.RecordingDay
 import com.rumput.vision.domain.model.RecordingHour
 import com.rumput.vision.domain.model.RecordingSegment
+import com.rumput.vision.domain.model.ConnectionRoute
+import com.rumput.vision.domain.model.ConnectionState
+import com.rumput.vision.domain.model.FrigateError
+import com.rumput.vision.domain.model.NetworkFailure
 import com.rumput.vision.feature.playback.PlaybackViewModel
+import com.rumput.vision.feature.playback.WaitingForServer
+import com.rumput.vision.testing.FakeServerConnection
+import com.rumput.vision.testing.url
 import com.rumput.vision.testing.FakeCameraMedia
 import com.rumput.vision.testing.FakeRecordingPlayerFactory
 import com.rumput.vision.testing.FakeRecordingRepository
@@ -20,6 +27,7 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -68,7 +76,7 @@ class RecordingsAndPlaybackTest {
         val store = ViewModelStore()
         val vm = PlaybackViewModel(
             SavedStateHandle(mapOf("camera" to "garasi", "startEpochSeconds" to 1_000L, "endEpochSeconds" to 4_600L)),
-            players, recordings, server, FakeCameraMedia("http://f"),
+            players, recordings, server, FakeCameraMedia("http://f"), FakeServerConnection(connected),
         )
         store.put("vm", vm)
         val job = launch { vm.uiState.collect {} }
@@ -92,4 +100,44 @@ class RecordingsAndPlaybackTest {
         store.clear()
         assertTrue(player.released)
     }
+
+    @Test
+    fun `playback opened offline waits for the server and loads once it connects`() = runTest(mainDispatcherRule.dispatcher) {
+        recordings.segments = listOf(RecordingSegment(1_000_000, 1_012_000))
+        val players = FakeRecordingPlayerFactory()
+        val connection = FakeServerConnection(ConnectionState.Unreachable(FrigateError.Unreachable(NetworkFailure.NO_NETWORK)))
+        val vm = PlaybackViewModel(
+            SavedStateHandle(mapOf("camera" to "garasi", "startEpochSeconds" to 1_000L, "endEpochSeconds" to 4_600L)),
+            players, recordings, server, FakeCameraMedia("http://f"), connection,
+        )
+        val job = launch { vm.uiState.collect {} }
+        advanceUntilIdle()
+        val player = players.created.single()
+
+        assertNull(player.loaded)
+        assertEquals(WaitingForServer.UNAVAILABLE, vm.uiState.value.waitingForServer)
+        vm.retryConnection()
+        assertEquals(1, connection.reconnects)
+
+        connection.state.value = ConnectionState.Connecting
+        advanceUntilIdle()
+        assertEquals(WaitingForServer.CONNECTING, vm.uiState.value.waitingForServer)
+
+        connection.state.value = connected
+        advanceUntilIdle()
+        assertEquals("http://f/vod/garasi/start/1000/end/4600/index.m3u8", player.loaded)
+        assertNull(vm.uiState.value.waitingForServer)
+        assertEquals(1, vm.uiState.value.timeline?.segments?.size)
+
+        // A later reconnect does not reload what is already playing.
+        player.loaded = null
+        connection.state.value = ConnectionState.Connecting
+        connection.state.value = connected
+        advanceUntilIdle()
+        assertNull(player.loaded)
+        assertNull(vm.uiState.value.waitingForServer)
+        job.cancel()
+    }
+
+    private val connected = ConnectionState.Connected(ConnectionRoute.LOCAL, url("http://f"), "0.18.2", anonymousAdmin = false)
 }

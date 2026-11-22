@@ -28,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
@@ -80,7 +82,7 @@ fun PlaybackScreen(onBack: () -> Unit, viewModel: PlaybackViewModel = hiltViewMo
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = RumputTheme.spacing.gutter, vertical = RumputTheme.spacing.xs),
                 )
-                VideoArea(state, viewModel.player)
+                VideoArea(state, viewModel.player, viewModel::retryConnection)
                 Controls(state, viewModel)
             }
         }
@@ -89,7 +91,7 @@ fun PlaybackScreen(onBack: () -> Unit, viewModel: PlaybackViewModel = hiltViewMo
 
 @OptIn(UnstableApi::class)
 @Composable
-private fun VideoArea(state: PlaybackUiState, player: Player?) {
+private fun VideoArea(state: PlaybackUiState, player: Player?, onRetryConnection: () -> Unit) {
     Box(
         Modifier
             .fillMaxWidth()
@@ -98,6 +100,26 @@ private fun VideoArea(state: PlaybackUiState, player: Player?) {
         contentAlignment = Alignment.Center,
     ) {
         PlayerSurface(player = player, surfaceType = SURFACE_TYPE_SURFACE_VIEW, modifier = Modifier.fillMaxSize())
+        when (state.waitingForServer) {
+            WaitingForServer.CONNECTING -> CircularProgressIndicator(color = Color.White, strokeWidth = 3.dp)
+            WaitingForServer.UNAVAILABLE -> Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(RumputTheme.spacing.lg)
+                    .background(Color.Black.copy(alpha = 0.7f), MaterialTheme.shapes.medium)
+                    .padding(RumputTheme.spacing.lg)
+                    .testTag("playback_waiting"),
+            ) {
+                Text(
+                    stringResource(R.string.playback_server_unavailable),
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                )
+                TextButton(onClick = onRetryConnection) { Text(stringResource(R.string.action_retry)) }
+            }
+            null -> Unit
+        }
         when (val playback = state.playback) {
             PlaybackState.Loading -> CircularProgressIndicator(color = Color.White, strokeWidth = 3.dp)
             is PlaybackState.Ready -> if (playback.buffering) CircularProgressIndicator(color = Color.White, strokeWidth = 3.dp)

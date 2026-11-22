@@ -84,7 +84,9 @@ a physical device for Phase 4.
 | `FrigateEventRepositoryTest` | Robolectric + Room + test server | Events parse/cache/paging/filters, offline detail, realtime keys |
 | `FrigateRealtimeTest` | WebSocket server | Messages, reconnect with backoff, no socket while disconnected |
 | `RecordingTimelineTest` | JVM | Playlist ↔ wall clock, including Frigate's untrimmed start (real numbers) |
-| `EventsViewModelsTest`, `RecordingsAndPlaybackTest` | coroutines-test | Paging, filters, offline, realtime merge; hour windows; playback |
+| `EventsViewModelsTest`, `RecordingsAndPlaybackTest` | coroutines-test | Paging, filters, offline, realtime merge; hour windows; playback, including opened offline |
+| `DiagnosticsReportTest` | JVM | Diagnostics report leaves out addresses, username and secrets; log masking; ring buffer |
+| `KeystoreCredentialStoreTest` | **Instrumented** (`androidTest`) | Real Android Keystore: AES-256-GCM round trip, random IV, profile binding, tamper rejection, non-exportable key, nothing secret on disk |
 
 Recorded fixtures live in `app/src/test/resources/frigate/0.18.2/`. They
 were captured from the real server and **sanitized**: go2rtc stream sources
@@ -97,9 +99,15 @@ Run the opt-in live test against an anonymous-access server:
 FRIGATE_LIVE_URL=http://192.168.100.22 ./gradlew :app:testDebugUnitTest --tests '*LiveFrigateServerTest*'
 ```
 
-The Keystore cipher (`KeystoreSecretCipher`) needs a real Android Keystore
-and is replaced by `FakeSecretCipher` in JVM tests. It should get an
-instrumented test (`androidTest`) once a device is part of the test routine.
+The Keystore cipher (`KeystoreSecretCipher`) needs a real Android Keystore,
+so JVM tests use `FakeSecretCipher` and the real cipher is covered by the
+instrumented `KeystoreCredentialStoreTest`. Run it with an emulator or device
+attached (it installs and then **uninstalls** the debug app, which deletes its
+data):
+
+```bash
+ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest
+```
 
 No test needs the home server: `testing/FrigateTestServer.kt` is a scriptable
 Frigate stand-in (HTTP or HTTPS with a test CA, optional 8971-style auth).
@@ -139,10 +147,23 @@ To sign:
 Back up the keystore. Losing it means future updates cannot be installed
 over existing installs.
 
+### Release checklist
+
+1. `./gradlew :app:testDebugUnitTest`, then `./gradlew :app:lintDebug` (separately, see above).
+2. `./gradlew :app:connectedDebugAndroidTest` on an emulator or device.
+3. Bump `versionCode` / `versionName` in `app/build.gradle.kts`.
+4. `./gradlew :app:assembleRelease` with `keystore.properties` present.
+5. Install the release APK and walk through: add server and test connection, Home, Cameras,
+   camera detail, live view (Sub and Main), live grid, Events, event detail, Play recording,
+   Recordings, Settings, About and diagnostics. Repeat the walk in airplane mode.
+6. Check there is no app output in logcat (`adb logcat | grep RumputVision` prints nothing for a
+   release build) and that the crash buffer is empty (`adb logcat -b crash -d`).
+
 ## Conventions
 
 - Dependencies are declared only in `gradle/libs.versions.toml`.
 - UI strings live in `res/values/strings.xml`.
-- Never log secrets. Use `AppLogger`, which redacts and is disabled in release.
+- Never log secrets. Use `AppLogger`, which redacts and is disabled in release. Its warnings and
+  errors also go to the in-memory `DiagnosticsLog` (all builds) for the diagnostics screen.
 - Do not mark a feature **Tested** in `IMPLEMENTATION_STATUS.md` unless a test
   actually ran.

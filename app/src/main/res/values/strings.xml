@@ -121,6 +121,20 @@
     <string name="about_application_id">Application ID</string>
     <string name="about_android">Android</string>
     <string name="about_device">Device</string>
+    <string name="about_section_diagnostics">Diagnostics</string>
+    <string name="diagnostics_connection">Connection</string>
+    <string name="diagnostics_network">Network</string>
+    <string name="diagnostics_network_offline">Offline</string>
+    <string name="diagnostics_network_local">Wi-Fi or Ethernet</string>
+    <string name="diagnostics_network_other">Mobile or other</string>
+    <string name="diagnostics_frigate">Frigate</string>
+    <string name="diagnostics_cameras">Cameras online</string>
+    <string name="diagnostics_recent_warnings">Recent warnings</string>
+    <string name="diagnostics_no_warnings">No warnings since the app started.</string>
+    <string name="diagnostics_copy">Copy diagnostics</string>
+    <string name="diagnostics_copy_body">Copies a plain-text report for troubleshooting. Passwords, tokens, the username and server addresses are left out.</string>
+    <string name="diagnostics_copied">Diagnostics copied</string>
+    <string name="diagnostics_unknown">Unknown</string>
     <string name="about_security_body">Credentials are encrypted with a key held in the Android Keystore and are never included in backups. Passwords are only sent over HTTPS with certificate validation. Logs never contain passwords or tokens.</string>
     <!-- Phase 2: connection, status, cameras -->
     <string name="action_refresh">Refresh</string>
@@ -293,5 +307,6 @@
     <string name="playback_forward_10">Forward 10 seconds</string>
     <string name="playback_not_found">No recording is available for this period. It may never have been recorded, or it has expired.</string>
     <string name="playback_unauthorized">The server refused the recording. Sign in again.</string>
+    <string name="playback_server_unavailable">The server cannot be reached. The recording will load when it is reachable again.</string>
     <string name="playback_network">The recording could not be loaded. Check the connection and try again.</string>
 </resources>
