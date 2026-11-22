@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Rumput Vision</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_cameras">Cameras</string>
+    <string name="nav_events">Events</string>
+    <string name="nav_recordings">Recordings</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Common -->
+    <string name="action_back">Back</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_show_password">Show password</string>
+    <string name="action_hide_password">Hide password</string>
+    <string name="state_loading">Loading…</string>
+
+    <!-- Connection / status -->
+    <string name="connection_connected_local">Connected · Local</string>
+    <string name="connection_connected_remote">Connected · Remote</string>
+    <string name="connection_connecting">Connecting</string>
+    <string name="connection_not_configured">No server</string>
+    <string name="connection_unauthorized">Sign-in required</string>
+    <string name="connection_unreachable">Unreachable</string>
+    <string name="connection_unknown">Not connected</string>
+    <string name="camera_status_online">Online</string>
+    <string name="camera_status_offline">Offline</string>
+    <string name="camera_status_disabled">Disabled</string>
+    <string name="camera_status_unknown">Status unknown</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Connect to your Frigate server</string>
+    <string name="onboarding_body">Rumput Vision is a client for a self-hosted Frigate NVR. Add your server to get started.</string>
+    <string name="onboarding_point_urls">Add a local URL for your home network and a separate remote URL, such as a Tailscale HTTPS address, for when you are away.</string>
+    <string name="onboarding_point_security">Passwords are encrypted with the Android Keystore and are only ever sent over HTTPS.</string>
+    <string name="onboarding_add_server">Add Frigate server</string>
+
+    <!-- Dashboard and pending features -->
+    <string name="dashboard_no_server_title">No server configured</string>
+    <string name="dashboard_no_server_body">Add a Frigate server to see cameras and events.</string>
+    <string name="dashboard_pending_title">Live connection not available yet</string>
+    <string name="dashboard_pending_body">This build saves your server settings but does not connect to Frigate yet. Camera previews, events and server health arrive with server connection support.</string>
+    <string name="cameras_pending_body">Camera discovery is not available in this build yet. Cameras will be loaded from your Frigate server.</string>
+    <string name="events_pending_body">The event timeline is not available in this build yet.</string>
+    <string name="recordings_pending_body">Recording playback is not available in this build yet.</string>
+
+    <!-- Settings -->
+    <string name="settings_section_servers">Servers</string>
+    <string name="settings_section_streaming">Streaming</string>
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_section_app">App</string>
+    <string name="settings_add_server">Add server</string>
+    <string name="settings_profile_active">Active</string>
+    <string name="settings_profile_set_active">Use</string>
+    <string name="settings_grid_quality">Grid preview stream</string>
+    <string name="settings_fullscreen_quality">Fullscreen stream</string>
+    <string name="settings_max_grid_streams">Live streams in grid</string>
+    <string name="settings_start_muted">Start live view muted</string>
+    <string name="settings_in_app_updates">In-app event updates</string>
+    <string name="settings_in_app_updates_body">Show new events while the app is open</string>
+    <string name="settings_push_notifications">Push notifications</string>
+    <string name="settings_push_notifications_unavailable">Not available yet. Requires a notification relay on your server.</string>
+    <string name="settings_about">About and diagnostics</string>
+    <string name="quality_sub">Substream</string>
+    <string name="quality_main">Main stream</string>
+
+    <!-- Profile editor -->
+    <string name="profile_add_title">Add server</string>
+    <string name="profile_edit_title">Edit server</string>
+    <string name="profile_field_name">Display name</string>
+    <string name="profile_field_local_url">Local URL</string>
+    <string name="profile_field_remote_url">Remote URL</string>
+    <string name="profile_field_endpoint">Connection</string>
+    <string name="profile_field_auth">Authentication</string>
+    <string name="profile_field_username">Username</string>
+    <string name="profile_field_password">Password</string>
+    <string name="profile_password_hint">Optional. You can also sign in later.</string>
+    <string name="profile_password_keep_hint">Leave blank to keep the saved password.</string>
+    <string name="profile_remember_password">Remember password</string>
+    <string name="profile_remember_password_body">Stored encrypted on this device and used to sign in again when the session expires.</string>
+    <string name="profile_auth_none_warning">No credentials will be sent. Use this only if the server is protected another way. A Frigate server that accepts unauthenticated requests gives admin access to anyone who can reach it.</string>
+    <string name="profile_delete">Delete server</string>
+    <string name="profile_delete_confirm_title">Delete this server?</string>
+    <string name="profile_delete_confirm_body">The server settings and any saved password on this device will be removed. Nothing is changed on the Frigate server.</string>
+    <string name="profile_not_found">This server no longer exists.</string>
+    <string name="endpoint_automatic">Automatic</string>
+    <string name="endpoint_local">Local only</string>
+    <string name="endpoint_remote">Remote only</string>
+    <string name="auth_frigate_login">Frigate login</string>
+    <string name="auth_none">None</string>
+
+    <!-- Validation -->
+    <string name="error_name_required">Enter a name</string>
+    <plurals name="error_name_too_long">
+        <item quantity="one">Use at most %1$d character</item>
+        <item quantity="other">Use at most %1$d characters</item>
+    </plurals>
+    <string name="error_username_required">Enter a username</string>
+    <string name="error_at_least_one_url">Enter a local URL, a remote URL, or both.</string>
+    <string name="error_local_required">\"Local only\" needs a local URL.</string>
+    <string name="error_remote_required">\"Remote only\" needs a remote URL.</string>
+    <string name="error_url_empty">Enter a URL</string>
+    <string name="error_url_missing_scheme">Start with http:// or https://</string>
+    <string name="error_url_unsupported_scheme">Only http:// and https:// are supported</string>
+    <string name="error_url_malformed">This is not a valid URL</string>
+    <string name="error_url_contains_credentials">Do not put a username or password in the URL</string>
+    <string name="error_url_query">Remove the ? query or # part</string>
+    <string name="error_url_missing_host">Enter a host name or IP address</string>
+    <string name="error_url_invalid_port">Port must be between 1 and 65535</string>
+    <string name="error_url_https_required">Signing in requires HTTPS so your password is not sent in plain text</string>
+    <string name="error_url_cleartext_public">Plain HTTP is only allowed for local network and Tailscale addresses</string>
+    <string name="warning_cleartext">Unencrypted connection. Anyone on the network can see this traffic.</string>
+    <string name="warning_cleartext_short">Unencrypted connection</string>
+    <string name="warning_port_5000">Port 5000 is Frigate\'s internal port and skips authentication. Use the authenticated port (8971) or a reverse proxy in front of it.</string>
+    <string name="warning_remote_lan_only">This address only works on your home network, so it will not work on mobile data.</string>
+
+    <!-- About -->
+    <string name="about_section_app">App</string>
+    <string name="about_section_device">Device</string>
+    <string name="about_section_security">Security</string>
+    <string name="about_version">Version</string>
+    <string name="about_build_type">Build type</string>
+    <string name="about_application_id">Application ID</string>
+    <string name="about_android">Android</string>
+    <string name="about_device">Device</string>
+    <string name="about_security_body">Credentials are encrypted with a key held in the Android Keystore and are never included in backups. Passwords are only sent over HTTPS with certificate validation. Logs never contain passwords or tokens.</string>
+</resources>

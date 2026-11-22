@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cleartext is permitted at the platform level because Android cannot express
+  "RFC 1918 addresses only" here. The app enforces the real policy itself:
+  see domain/usecase/ServerUrlPolicy.kt and docs/SECURITY.md §2.3.
+  Only system CAs are trusted; user-installed CAs are never trusted in release.
+-->
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <base-config cleartextTrafficPermitted="true" tools:ignore="InsecureBaseConfiguration">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
