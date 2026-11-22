@@ -9,6 +9,8 @@ data class Camera(
     val showOnDashboard: Boolean,
     /** go2rtc streams offered for live view (`live.streams`), in config order. */
     val liveStreams: List<CameraStream>,
+    /** go2rtc restream used for recording, usually the full-resolution main stream. */
+    val mainStreamName: String? = null,
     val detectWidth: Int?,
     val detectHeight: Int?,
     val detectEnabled: Boolean,
@@ -18,6 +20,22 @@ data class Camera(
 )
 
 data class CameraStream(val label: String, val streamName: String)
+
+/**
+ * The go2rtc stream to play for [quality]. SUB is Frigate's own live-view stream (`live.streams`);
+ * MAIN is the record restream. Each falls back to the other when it is not configured.
+ */
+fun Camera.streamFor(quality: StreamQuality): String? {
+    val sub = liveStreams.firstOrNull()?.streamName
+    return when (quality) {
+        StreamQuality.SUB -> sub ?: mainStreamName
+        StreamQuality.MAIN -> mainStreamName ?: sub
+    }
+}
+
+/** True when SUB and MAIN resolve to different streams, i.e. a quality choice is meaningful. */
+val Camera.hasQualityChoice: Boolean
+    get() = streamFor(StreamQuality.SUB) != streamFor(StreamQuality.MAIN)
 
 data class CameraStats(
     val cameraFps: Double,

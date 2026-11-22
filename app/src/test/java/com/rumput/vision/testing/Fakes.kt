@@ -203,6 +203,41 @@ class FakeCredentialStore : com.rumput.vision.core.security.CredentialStore {
 class FakeCameraMedia(var baseUrl: String? = null) : com.rumput.vision.domain.repository.CameraMedia {
     override fun latestFrameUrl(cameraName: String, height: Int): String? =
         baseUrl?.let { "$it/api/$cameraName/latest.webp?height=$height" }
+
+    override fun liveStreamUrl(streamName: String): String? =
+        baseUrl?.let { "${it.replace("http", "ws")}/live/mse/api/ws?src=$streamName" }
+}
+
+/** Records calls; tests drive [state] directly. */
+class FakeStreamPlayer : com.rumput.vision.core.streaming.CameraStreamPlayer {
+    override val state = MutableStateFlow<com.rumput.vision.core.streaming.StreamState>(com.rumput.vision.core.streaming.StreamState.Idle)
+    override val rebufferingFrequently = MutableStateFlow(false)
+    override val player: androidx.media3.common.Player? = null
+    var source: com.rumput.vision.core.streaming.StreamSource? = null
+    var playing = false
+    var muted: Boolean? = null
+    var released = false
+    var retries = 0
+    val prepared = mutableListOf<com.rumput.vision.core.streaming.StreamSource>()
+
+    override fun prepare(source: com.rumput.vision.core.streaming.StreamSource) {
+        if (source != this.source) prepared += source
+        this.source = source
+    }
+    override fun play() { playing = true }
+    override fun stop() { playing = false }
+    override fun retry() { retries++ }
+    override fun setMuted(muted: Boolean) { this.muted = muted }
+    override fun release() { released = true; playing = false }
+}
+
+class FakeStreamPlayerFactory : com.rumput.vision.core.streaming.CameraStreamPlayerFactory {
+    val created = mutableListOf<FakeStreamPlayer>()
+    val profiles = mutableListOf<com.rumput.vision.core.streaming.BufferProfile>()
+    override fun create(profile: com.rumput.vision.core.streaming.BufferProfile) = FakeStreamPlayer().also {
+        created += it
+        profiles += profile
+    }
 }
 
 fun cameraWithStatus(
@@ -217,6 +252,7 @@ fun cameraWithStatus(
         order = 0,
         showOnDashboard = true,
         liveStreams = listOf(com.rumput.vision.domain.model.CameraStream("${name}_sub", "${name}_sub")),
+        mainStreamName = "${name}_main",
         detectWidth = 2560,
         detectHeight = 1440,
         detectEnabled = false,

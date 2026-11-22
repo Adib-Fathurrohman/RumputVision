@@ -5,6 +5,7 @@ import com.rumput.vision.core.network.FrigateJson
 import com.rumput.vision.data.remote.dto.CameraConfigDto
 import com.rumput.vision.data.remote.dto.CameraStatsDto
 import com.rumput.vision.data.remote.dto.StatsDto
+import com.rumput.vision.data.remote.dto.mainRestreamName
 import com.rumput.vision.domain.model.Camera
 import com.rumput.vision.domain.model.CameraStats
 import com.rumput.vision.domain.model.CameraStream
@@ -35,6 +36,7 @@ fun CameraConfigDto.toEntity(profileId: String, name: String, lastSeenOnlineAt: 
     recordEnabled = record?.enabled ?: false,
     snapshotsEnabled = snapshots?.enabled ?: false,
     audioEnabled = audio?.enabled ?: false,
+    mainStream = mainRestreamName(),
     lastSeenOnlineAt = lastSeenOnlineAt,
     updatedAt = now,
 )
@@ -48,6 +50,7 @@ fun CameraEntity.toDomain(): Camera = Camera(
     liveStreams = runCatching { FrigateJson.decodeFromString(streamListSerializer, liveStreams) }
         .getOrDefault(emptyList())
         .map { CameraStream(it.label, it.stream) },
+    mainStreamName = mainStream,
     detectWidth = detectWidth,
     detectHeight = detectHeight,
     detectEnabled = detectEnabled,

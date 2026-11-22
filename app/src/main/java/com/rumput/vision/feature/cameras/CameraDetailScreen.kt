@@ -45,13 +45,17 @@ import com.rumput.vision.domain.model.CameraWithStatus
 import com.rumput.vision.domain.model.ConnectionState
 
 @Composable
-fun CameraDetailScreen(onBack: () -> Unit, viewModel: CameraDetailViewModel = hiltViewModel()) {
+fun CameraDetailScreen(
+    onBack: () -> Unit,
+    onOpenLiveView: (String) -> Unit,
+    viewModel: CameraDetailViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    CameraDetailContent(state, onBack = onBack)
+    CameraDetailContent(state, onBack = onBack, onOpenLiveView = onOpenLiveView)
 }
 
 @Composable
-fun CameraDetailContent(state: CameraDetailUiState, onBack: () -> Unit) {
+fun CameraDetailContent(state: CameraDetailUiState, onBack: () -> Unit, onOpenLiveView: (String) -> Unit) {
     val title = state.camera?.camera?.displayName ?: cameraDisplayName(state.cameraName)
     RumputScreen(
         title = title,
@@ -63,7 +67,7 @@ fun CameraDetailContent(state: CameraDetailUiState, onBack: () -> Unit) {
         val modifier = Modifier.padding(padding).fillMaxSize()
         val camera = state.camera
         when {
-            camera != null -> DetailBody(camera, state, modifier)
+            camera != null -> DetailBody(camera, state, modifier, onOpenLiveView)
             state.isLoading -> LoadingState(modifier)
             else -> EmptyState(
                 icon = Icons.Outlined.VideocamOff,
@@ -76,7 +80,7 @@ fun CameraDetailContent(state: CameraDetailUiState, onBack: () -> Unit) {
 }
 
 @Composable
-private fun DetailBody(item: CameraWithStatus, state: CameraDetailUiState, modifier: Modifier) {
+private fun DetailBody(item: CameraWithStatus, state: CameraDetailUiState, modifier: Modifier, onOpenLiveView: (String) -> Unit) {
     val spacing = RumputTheme.spacing
     val camera = item.camera
     val stats = item.stats
@@ -107,15 +111,13 @@ private fun DetailBody(item: CameraWithStatus, state: CameraDetailUiState, modif
                 }
                 if (item.isCached) WarningText(stringResource(R.string.cameras_cached_notice))
                 if (state.connection is ConnectionState.Unreachable) WarningText(stringResource(R.string.camera_detail_offline))
-                // Live streaming is built in a later phase; the action is visible but honestly unavailable.
-                Button(onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = { onOpenLiveView(camera.name) },
+                    enabled = item.status != CameraStatus.DISABLED && state.connection is ConnectionState.Connected,
+                    modifier = Modifier.fillMaxWidth().testTag("open_live_view"),
+                ) {
                     Text(stringResource(R.string.camera_live_view))
                 }
-                Text(
-                    stringResource(R.string.camera_live_view_unavailable),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
 
             SectionHeader(stringResource(R.string.camera_section_health))
@@ -143,6 +145,7 @@ private fun DetailBody(item: CameraWithStatus, state: CameraDetailUiState, modif
             InfoRow(stringResource(R.string.camera_info_name), camera.name)
 
             SectionHeader(stringResource(R.string.camera_section_streams))
+            camera.mainStreamName?.let { InfoRow(stringResource(R.string.camera_info_main_stream), it) }
             if (camera.liveStreams.isEmpty()) {
                 InfoRow(stringResource(R.string.camera_info_streams), null)
             } else {

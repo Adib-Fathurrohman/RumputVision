@@ -3,8 +3,9 @@
 ## Facts from the installed server (verified 2026-11-22)
 
 - go2rtc `1.9.14`, embedded in Frigate 0.18.2.
-- Main streams are **H.264 High**. Sub streams (used for live view on every
-  camera, `live.streams`) are **H.265/HEVC**. Camera audio is PCMA (G.711
+- Main streams are **H.264 High** (2560×1440 / 1920×1080, ~25 fps, ~6 Mbit/s). Sub streams
+  (`live.streams`) were **H.265/HEVC** at first; the owner switched them to **H.264 High 704×576
+  25 fps** on 2026-11-22 (also used for Frigate's detect role since then). Camera audio is PCMA (G.711
   A-law) 8 kHz.
 - Frigate's Nginx exposes go2rtc **only over WebSockets**:
   - `/live/mse/api/ws?src=<stream>` (MSE)
@@ -101,12 +102,76 @@ interface CameraStreamPlayer {
   `ServerClosed`. Retries use exponential backoff with jitter, capped, and
   happen only while the screen is visible.
 
-### To verify in Phase 4 (on a physical device)
+## Implementation (Phase 4)
 
-- [ ] H.265 sub stream decodes via MediaCodec on the test device.
-- [ ] FLAC audio in fMP4 plays; mute toggle.
-- [ ] Latency glass-to-glass (target < 1.5 s LAN).
-- [ ] Through HTTPS + JWT on 8971 (after SECURITY.md S1/S3).
+`core/streaming/`:
+
+| Class | Role |
+|---|---|
+| `MseWebSocketDataSource` | Media3 `DataSource` over go2rtc's MSE WebSocket. Sends the codec request, waits for the `mse` reply, then turns each binary message into bytes for `FragmentedMp4Extractor`. Fails with typed `StreamFailure`s: `UNAUTHORIZED` (401/403 upgrade), `SOURCE_ERROR` (go2rtc `error` message), `NETWORK` (stall > 10 s, drop), `FELL_BEHIND` (data queued > 4 s). `abort()` closes the socket from any thread and wakes the reader. |
+| `StreamCodecs` | Codec list from `MediaCodecList`: H.264 always, H.265 only if a decoder exists, audio codecs only while unmuted. |
+| `Media3CameraStreamPlayer` | `CameraStreamPlayer` on ExoPlayer: buffering per `BufferProfile` (`LOW_LATENCY` for single live view, `SMOOTH` for the grid), catch-up speed, retry/backoff (`RetryPolicy`), audio fallback, rebuffer detection. |
+| `CameraStreamPlayerFactory` | Creates players (an interface, so ViewModels are tested with fakes). |
+
+Stream selection (`Camera.streamFor`): **Sub** = Frigate's `live.streams` entry, and **Main** = the go2rtc
+restream used by the record input (`rtsp://127.0.0.1:8554/<name>`, parsed from the config; other input
+paths, which may contain credentials, are never stored). Each falls back to the other.
+
+Screens: **Live view** (`feature/liveview/LiveViewScreen`) for one camera, with quality, mute, camera
+switching and fullscreen, plus immersive mode in landscape. The video area uses the camera's detect
+aspect ratio, which corrects anamorphic 704×576 sub streams. **Live grid** (`LiveGridScreen`) is 2×2,
+pages for more cameras, at most `maxConcurrentGridStreams` live players on the grid quality, always muted;
+other cells show refreshing stills.
+
+## Findings from the physical device (Infinix X6731B, Helio G99, Android 14, 2026-11-22)
+
+1. **Hardware decoding works.** `c2.mtk.avc.decoder` decoded H.264 2560×1440 main streams, and
+   `c2.mtk.hevc.decoder` decoded the (then) H.265 sub streams. Four simultaneous H.264 sub-stream
+   decoders initialised without errors.
+2. **go2rtc's FLAC audio breaks Android's FLAC decoder.** For PCMA cameras go2rtc transcodes audio to
+   FLAC, the only MSE audio it offers them (offering only AAC/Opus gives video only). Android's
+   `c2.android.flac.decoder` fails with `CodecException 0xe` every ~6 s. FFmpeg decodes the same data
+   fine, but the stream contains irregular block sizes (mostly 320 samples, occasionally 311 and a 9-byte
+   frame). Handling:
+   - **Muted streams request no audio**, which is the default. This also saves bandwidth and the server's
+     FLAC encoding CPU.
+   - **Unmuting reconnects with audio.** If the audio renderer then fails, the player reconnects video-only
+     and shows "Audio … could not be played". Verified on the device.
+3. **First frame time is the camera's keyframe interval.** It was 4.5 s on the main stream and
+   1.4–3.2 s on the H.264 sub streams.
+4. **Buffers.** A 300 ms resume threshold re-stalled immediately on 2.4 GHz Wi-Fi with 6 Mbit/s main
+   streams. Settings now: min 1 s, max 2.5 s, start after 200 ms, resume after 1 s, and speed up 1.15×
+   above 2 s buffered.
+5. **The phone's 2.4 GHz link is the bottleneck.** The server is wired (100 Mbps; it should be
+   gigabit, so check the cable or switch port), and cameras and gateway answer the server in < 30 ms.
+   The phone, on 2.4 GHz channel 9 (single-stream 802.11n, the channel reported 80 % busy), shows
+   15 % ping loss even when idle. With the 4-stream grid (3.2 Mbit/s) its pings rise to 0.5–4 s,
+   i.e. data arrives at full average rate but in bursts seconds late. An earlier run at −71 dBm got only
+   ~1.4 Mbit/s.
+   - **WifiLock A/B (same conditions, near the router at −55 dBm):** with `WIFI_MODE_FULL_LOW_LATENCY`
+     2.82 / 2.80 Mbit/s and 12 / 8 stalls; without it 2.81 Mbit/s and 11 stalls. There was no
+     measurable benefit, so it was **removed** (also dropping the `WAKE_LOCK` permission).
+   - **Grid `SMOOTH` profile:** buffer 2.5–5 s, resume after 2 s. Result: all four tiles live,
+     3.22 Mbit/s delivered, **4 stalls in 21 s** (vs 8–12 with the low-latency profile).
+   - **Stalled tiles keep the last video frame** instead of being covered by a still that may not
+     load on a congested link either.
+   - **"Video keeps pausing" hint** offers Sub when Main rebuffers ≥ 3 times in 30 s.
+   - **Best fix is the network:** put the phone on 5 GHz if the router offers it, or move the cameras off
+     the 2.4 GHz channel if they use Wi-Fi.
+6. **Leaving the screen closes the stream.** The app aborts its WebSockets at once; the player was idle
+   ~1 s after Home. go2rtc keeps listing the consumer for ~5 s more (nginx detects the close lazily).
+7. **OkHttp limit.** Live WebSockets hold a dispatcher slot for their lifetime, so they now use a
+   dedicated dispatcher. Otherwise four streams would leave one of OkHttp's 5 per-host slots for every
+   API call and snapshot.
+
+### Still to verify on a device
+
+- [x] H.264 and H.265 hardware decoding.
+- [x] Audio fallback; video-only when muted.
+- [x] Stream closed when leaving or backgrounding (app side ~1 s).
+- [x] Four simultaneous decoders start.
+- [x] 4-stream grid plays live (with the SMOOTH profile; occasional stalls remain on this 2.4 GHz link).
+- [x] WifiLock effect (none measured; removed).
+- [ ] Glass-to-glass latency measurement.
 - [ ] Over Tailscale on mobile data.
-- [ ] Four simultaneous sub streams: CPU, memory, battery, bandwidth.
-- [ ] Recovery after Wi-Fi ↔ mobile handover.
+- [ ] Battery and thermal behaviour over a long session.

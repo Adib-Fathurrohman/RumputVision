@@ -10,6 +10,8 @@ import com.rumput.vision.feature.cameras.CameraDetailScreen
 import com.rumput.vision.feature.cameras.CamerasScreen
 import com.rumput.vision.feature.dashboard.DashboardScreen
 import com.rumput.vision.feature.events.EventsScreen
+import com.rumput.vision.feature.liveview.LiveGridScreen
+import com.rumput.vision.feature.liveview.LiveViewScreen
 import com.rumput.vision.feature.onboarding.OnboardingScreen
 import com.rumput.vision.feature.recordings.RecordingsScreen
 import com.rumput.vision.feature.settings.AboutScreen
@@ -33,12 +35,28 @@ fun RumputNavHost(
                 onAddServer = { navController.navigate(ServerProfileEditRoute()) },
                 onEditServer = { id -> navController.navigate(ServerProfileEditRoute(profileId = id)) },
                 onOpenCamera = { name -> navController.navigate(CameraDetailRoute(name)) },
+                onOpenLiveGrid = { navController.navigate(LiveGridRoute) },
             )
         }
         composable<CamerasRoute> {
-            CamerasScreen(onOpenCamera = { name -> navController.navigate(CameraDetailRoute(name)) })
+            CamerasScreen(
+                onOpenCamera = { name -> navController.navigate(CameraDetailRoute(name)) },
+                onOpenLiveGrid = { navController.navigate(LiveGridRoute) },
+            )
         }
-        composable<CameraDetailRoute> { CameraDetailScreen(onBack = navController::navigateUp) }
+        composable<CameraDetailRoute> {
+            CameraDetailScreen(
+                onBack = navController::navigateUp,
+                onOpenLiveView = { name -> navController.navigate(LiveViewRoute(name)) },
+            )
+        }
+        composable<LiveViewRoute> { LiveViewScreen(onBack = navController::navigateUp) }
+        composable<LiveGridRoute> {
+            LiveGridScreen(
+                onBack = navController::navigateUp,
+                onOpenCamera = { name -> navController.navigate(LiveViewRoute(name)) },
+            )
+        }
         composable<EventsRoute> { EventsScreen() }
         composable<RecordingsRoute> { RecordingsScreen() }
         composable<SettingsRoute> {

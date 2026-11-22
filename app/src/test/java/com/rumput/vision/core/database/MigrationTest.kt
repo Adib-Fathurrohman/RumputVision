@@ -27,7 +27,7 @@ class MigrationTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
 
     @Test
-    fun `v1 to v2 keeps server profiles and adds the cameras table`() = runBlocking {
+    fun `v1 migrates to the current version, keeping server profiles`() = runBlocking {
         val dbFile = context.getDatabasePath("migration-test.db").apply { parentFile?.mkdirs(); delete() }
         createVersion1(dbFile)
 
@@ -38,7 +38,7 @@ class MigrationTest {
             val profiles = db.serverProfileDao().observeAll().first()
             assertEquals(listOf("Rumah"), profiles.map { it.displayName })
             assertTrue(db.cameraDao().getForProfile("p1").isEmpty())
-            assertEquals(2, db.openHelper.readableDatabase.version)
+            assertEquals(CURRENT_VERSION, db.openHelper.readableDatabase.version)
         } finally {
             db.close()
         }
@@ -63,6 +63,8 @@ class MigrationTest {
     }
 
     private companion object {
+        const val CURRENT_VERSION = 3
+
         // Unit tests run with the module directory as the working directory.
         val SCHEMA_DIR = File("schemas/com.rumput.vision.core.database.RumputDatabase")
     }

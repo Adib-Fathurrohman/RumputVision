@@ -29,6 +29,10 @@ class FrigateCameraMediaTest {
             "${server.url().value}/api/a%2Fb%20c/latest.webp?height=360",
             media.latestFrameUrl("a/b c", 360),
         )
+        assertEquals(
+            "${server.url().value.replace("http://", "ws://")}/live/mse/api/ws?src=garasi_sub",
+            media.liveStreamUrl("garasi_sub"),
+        )
     }
 
     @Test

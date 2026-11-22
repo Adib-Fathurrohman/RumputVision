@@ -6,6 +6,7 @@ import com.rumput.vision.core.network.ForegroundMonitor
 import com.rumput.vision.core.network.NetworkMonitor
 import com.rumput.vision.core.network.NetworkStatus
 import com.rumput.vision.core.security.CredentialStore
+import com.rumput.vision.core.streaming.StreamClientProvider
 import com.rumput.vision.core.security.StoredCredentials
 import com.rumput.vision.data.remote.auth.BearerTokenInterceptor
 import com.rumput.vision.data.remote.auth.FrigateLoginService
@@ -77,7 +78,7 @@ class FrigateSession @Inject constructor(
     private val baseClient: OkHttpClient,
     private val clock: Clock,
     @param:ApplicationScope private val scope: CoroutineScope,
-) : ServerConnection {
+) : ServerConnection, StreamClientProvider {
 
     private val _state = MutableStateFlow<ConnectionState>(ConnectionState.Unknown)
     override val state: StateFlow<ConnectionState> = _state.asStateFlow()
@@ -151,10 +152,12 @@ class FrigateSession @Inject constructor(
      * Call factory for media (images, later video). Requests under the connected endpoint's base URL use
      * its authenticated client; anything else gets the base client, so credentials never leak elsewhere.
      */
-    val mediaCallFactory: Call.Factory = Call.Factory { request ->
+    val mediaCallFactory: Call.Factory = Call.Factory { request -> mediaClientFor(request.url).newCall(request) }
+
+    /** The authenticated client for URLs under the connected endpoint; the plain base client for anything else. */
+    override fun mediaClientFor(url: HttpUrl): OkHttpClient {
         val endpoint = active
-        val client = if (endpoint != null && endpoint.url.contains(request.url)) endpoint.client else baseClient
-        client.newCall(request)
+        return if (endpoint != null && endpoint.url.contains(url)) endpoint.client else baseClient
     }
 
     override fun reconnect() {

@@ -149,6 +149,28 @@ publishing 8554.
 Installed `0.18.2-cfa08c5`. `/api/stats` reports `latest_version: 0.18.3`.
 Update after reading the release notes.
 
+### Deployment change applied 2026-11-22: detect on the sub stream
+
+With the owner's approval, `~/frigate/config/config.yml` was changed over SSH (backup:
+`config.yml.bak-before-detect-on-sub-20261122-151556` in the same folder):
+
+- Each camera now has two inputs: `<camera>_main` with `roles: [record]` (copied to disk, never
+  decoded) and `<camera>_sub` with `roles: [detect]`.
+- `detect.width/height: 1024×576`. This de-anamorphoses the 704×576 sub streams (H.264 High, 25 fps,
+  switched from H.265 by the owner) to 16:9.
+
+Before, Frigate made the only input do detection too, so it decoded every 2560×1440 main stream on
+the iGPU even though detection is disabled. Measured from `/api/stats`, three samples each:
+
+| | Before | After |
+|---|---|---|
+| iGPU decode | 44–47 % | 6–7 % |
+| Frigate ffmpeg CPU (sum of 4 cameras) | ~53 % | ~20 % |
+| Load average (1 min) | 4.9 | 2.2 |
+
+Recording was verified afterwards (fresh segments for all four cameras). Side effect: event snapshots
+and `latest.*` images are now 1024×576. To revert, restore the backup and `docker restart frigate`.
+
 ### Things that were *not* verified
 
 - Login, token refresh and roles on port 8971 could not be tested because

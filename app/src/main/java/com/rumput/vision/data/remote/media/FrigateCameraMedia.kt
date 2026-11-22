@@ -20,4 +20,14 @@ class FrigateCameraMedia @Inject constructor(
             .build()
             .toString()
     }
+
+    override fun liveStreamUrl(streamName: String): String? {
+        val base = session.connectedBaseUrl ?: return null
+        val http = "${base.value}/".toHttpUrl().newBuilder()
+            .addPathSegments("live/mse/api/ws")
+            .addQueryParameter("src", streamName)
+            .build()
+            .toString()
+        return if (base.isHttps) "wss://" + http.removePrefix("https://") else "ws://" + http.removePrefix("http://")
+    }
 }

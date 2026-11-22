@@ -22,3 +22,8 @@ data class ServerProfileEditRoute(val profileId: String? = null, val fromOnboard
 
 @Serializable
 data class CameraDetailRoute(val cameraName: String)
+
+@Serializable
+data class LiveViewRoute(val cameraName: String)
+
+@Serializable data object LiveGridRoute

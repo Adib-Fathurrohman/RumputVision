@@ -32,6 +32,8 @@ data class CameraEntity(
     @ColumnInfo(name = "record_enabled") val recordEnabled: Boolean,
     @ColumnInfo(name = "snapshots_enabled") val snapshotsEnabled: Boolean,
     @ColumnInfo(name = "audio_enabled") val audioEnabled: Boolean,
+    /** go2rtc name of the main (record) restream, if the camera records from Frigate's restream. */
+    @ColumnInfo(name = "main_stream", defaultValue = "NULL") val mainStream: String? = null,
     @ColumnInfo(name = "last_seen_online_at") val lastSeenOnlineAt: Long?,
     @ColumnInfo(name = "updated_at") val updatedAt: Long,
 )

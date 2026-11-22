@@ -57,6 +57,15 @@ abstract class FakeRepositoryModule {
     }
 }
 
+@Module
+@TestInstallIn(components = [SingletonComponent::class], replaces = [com.rumput.vision.core.streaming.StreamingModule::class])
+abstract class FakeStreamingModule {
+    companion object {
+        @Provides @Singleton
+        fun players(): com.rumput.vision.core.streaming.CameraStreamPlayerFactory = com.rumput.vision.testing.FakeStreamPlayerFactory()
+    }
+}
+
 /** End-to-end navigation through the real activity, Hilt graph and screens, with fake repositories. */
 @HiltAndroidTest
 @RunWith(RobolectricTestRunner::class)
@@ -66,6 +75,7 @@ class AppNavigationTest {
     @get:Rule(order = 1) val composeRule = createAndroidComposeRule<MainActivity>()
 
     @javax.inject.Inject lateinit var serverRepository: ServerRepository
+    @javax.inject.Inject lateinit var connection: ServerConnection
 
     private fun addServerThroughOnboarding() {
         composeRule.onNodeWithTag("onboarding_add_server").performClick()
@@ -142,5 +152,26 @@ class AppNavigationTest {
             .performScrollTo()
             .assertIsDisplayed()
         composeRule.onNodeWithTag("screen_profile_edit").assertIsDisplayed()
+    }
+
+    @Test
+    fun cameraDetail_opensLiveView_andBack() {
+        hiltRule.inject()
+        addServerThroughOnboarding()
+        (serverRepository as FakeServerRepository).cameras.value = listOf(com.rumput.vision.testing.cameraWithStatus("garasi"))
+        (connection as FakeServerConnection).state.value = ConnectionState.Connected(
+            com.rumput.vision.domain.model.ConnectionRoute.LOCAL,
+            com.rumput.vision.testing.url("http://frigate.home.arpa"),
+            "0.18.2",
+            anonymousAdmin = false,
+        )
+
+        composeRule.onNodeWithTag("dashboard_list").performScrollToNode(hasTestTag("preview_garasi"))
+        composeRule.onNodeWithTag("preview_garasi").performClick()
+        composeRule.onNodeWithTag("open_live_view").performScrollTo().performClick()
+        composeRule.onNodeWithTag("screen_live_view").assertIsDisplayed()
+        composeRule.onNodeWithText("garasi_main").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Back").performClick()
+        composeRule.onNodeWithTag("screen_camera_detail").assertIsDisplayed()
     }
 }

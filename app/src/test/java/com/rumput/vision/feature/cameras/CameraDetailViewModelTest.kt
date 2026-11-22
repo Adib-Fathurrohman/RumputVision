@@ -50,7 +50,7 @@ class CameraDetailViewModelTest {
 
         val state = vm.uiState.value
         assertEquals("garasi", state.camera?.camera?.name)
-        assertEquals("http://frigate.home.arpa/api/garasi/latest.webp?height=720", state.snapshotUrl)
+        assertEquals("http://frigate.home.arpa/api/garasi/latest.webp?height=576", state.snapshotUrl)
         assertEquals(0L, state.snapshotTick)
         assertEquals(1, server.refreshCount)
 

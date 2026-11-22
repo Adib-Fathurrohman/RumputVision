@@ -25,7 +25,31 @@ data class CameraConfigDto(
     val record: EnabledDto? = null,
     val snapshots: EnabledDto? = null,
     val audio: EnabledDto? = null,
+    val ffmpeg: FfmpegDto? = null,
 )
+
+/**
+ * Camera inputs. Paths may embed camera credentials when they point at the camera directly:
+ * only go2rtc restream names are extracted (see [restreamName]) and paths are never stored or logged.
+ */
+@Serializable
+data class FfmpegDto(val inputs: List<FfmpegInputDto> = emptyList())
+
+@Serializable
+data class FfmpegInputDto(val path: String = "", val roles: List<String> = emptyList()) {
+    override fun toString(): String = "FfmpegInputDto(path=<redacted>, roles=$roles)"
+}
+
+private val RESTREAM = Regex("""^rtsp://(?:127\.0\.0\.1|localhost):8554/([A-Za-z0-9_.-]+)(?:\?.*)?$""")
+
+/** The go2rtc stream name if this input reads Frigate's own restream, else null. */
+fun FfmpegInputDto.restreamName(): String? = RESTREAM.matchEntire(path)?.groupValues?.get(1)
+
+/** go2rtc stream feeding the record role (else detect): the camera's main stream on typical setups. */
+fun CameraConfigDto.mainRestreamName(): String? {
+    val inputs = ffmpeg?.inputs.orEmpty()
+    return (inputs.firstOrNull { "record" in it.roles } ?: inputs.firstOrNull { "detect" in it.roles })?.restreamName()
+}
 
 @Serializable
 data class CameraUiDto(val order: Int = 0, val dashboard: Boolean = true)

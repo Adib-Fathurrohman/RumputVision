@@ -4,4 +4,7 @@ package com.rumput.vision.domain.repository
 interface CameraMedia {
     /** The camera's current frame (`/api/<camera>/latest.webp`), scaled by the server to [height] pixels. */
     fun latestFrameUrl(cameraName: String, height: Int): String?
+
+    /** go2rtc MSE WebSocket (`/live/mse/api/ws?src=<stream>`), as ws:// or wss:// matching the server URL. */
+    fun liveStreamUrl(streamName: String): String?
 }

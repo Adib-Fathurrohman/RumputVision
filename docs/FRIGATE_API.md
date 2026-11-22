@@ -75,8 +75,9 @@ decoded as opaque JSON and never read, stored or logged.
 **Display names:** Frigate 0.18 has no friendly-name field for cameras, so
 the app derives one from the name (`ruang_tengah` → "Ruang Tengah").
 
-**Snapshot cadence (Phase 3):** dashboard grid 360p every 10 s, Cameras list
-180p every 30 s, camera detail 720p every 4 s. Each runs only while that
+**Snapshot cadence:** dashboard grid 360p every 10 s, Cameras list
+180p every 30 s, camera detail 576p every 4 s (frames come from the 1024×576 detect stream since the
+2026-11-22 server change). Each runs only while that
 screen is visible and the server is connected. Intervals stay well above the
 server's per-frame encode time.
 

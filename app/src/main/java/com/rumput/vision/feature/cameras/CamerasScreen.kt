@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Videocam
 import androidx.compose.material3.HorizontalDivider
@@ -30,17 +31,31 @@ import com.rumput.vision.core.design.theme.RumputTheme
 import com.rumput.vision.domain.model.ConnectionState
 
 @Composable
-fun CamerasScreen(onOpenCamera: (String) -> Unit, viewModel: CamerasViewModel = hiltViewModel()) {
+fun CamerasScreen(
+    onOpenCamera: (String) -> Unit,
+    onOpenLiveGrid: () -> Unit,
+    viewModel: CamerasViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    CamerasContent(state, onRefresh = viewModel::refresh, onOpenCamera = onOpenCamera)
+    CamerasContent(state, onRefresh = viewModel::refresh, onOpenCamera = onOpenCamera, onOpenLiveGrid = onOpenLiveGrid)
 }
 
 @Composable
-fun CamerasContent(state: CamerasUiState, onRefresh: () -> Unit, onOpenCamera: (String) -> Unit) {
+fun CamerasContent(
+    state: CamerasUiState,
+    onRefresh: () -> Unit,
+    onOpenCamera: (String) -> Unit,
+    onOpenLiveGrid: () -> Unit,
+) {
     RumputScreen(
         title = stringResource(R.string.nav_cameras),
         modifier = Modifier.testTag("screen_cameras"),
         actions = {
+            if (state.connection is ConnectionState.Connected && state.cameras.isNotEmpty()) {
+                IconButton(onClick = onOpenLiveGrid) {
+                    Icon(Icons.Outlined.GridView, contentDescription = stringResource(R.string.live_grid_open))
+                }
+            }
             IconButton(onClick = onRefresh, enabled = !state.isRefreshing) {
                 Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.action_refresh))
             }

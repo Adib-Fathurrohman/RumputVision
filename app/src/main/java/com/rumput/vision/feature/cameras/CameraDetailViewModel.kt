@@ -78,6 +78,7 @@ class CameraDetailViewModel @Inject constructor(
         /** Frigate encodes each frame on request; 4 s keeps the server load low while staying useful. */
         const val SNAPSHOT_INTERVAL_MILLIS = 4_000L
         const val STATS_INTERVAL_MILLIS = 15_000L
-        const val DETAIL_HEIGHT = 720
+        /** Frigate's frames come from the detect stream (1024×576 on this server); asking for more only upscales. */
+        const val DETAIL_HEIGHT = 576
     }
 }

@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,6 +60,7 @@ fun DashboardScreen(
     onAddServer: () -> Unit,
     onEditServer: (String) -> Unit,
     onOpenCamera: (String) -> Unit,
+    onOpenLiveGrid: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -67,6 +69,7 @@ fun DashboardScreen(
         onAddServer = onAddServer,
         onEditServer = onEditServer,
         onOpenCamera = onOpenCamera,
+        onOpenLiveGrid = onOpenLiveGrid,
         onRetry = viewModel::retry,
         onSignIn = viewModel::signIn,
     )
@@ -78,6 +81,7 @@ fun DashboardContent(
     onAddServer: () -> Unit,
     onEditServer: (String) -> Unit,
     onOpenCamera: (String) -> Unit,
+    onOpenLiveGrid: () -> Unit,
     onRetry: () -> Unit,
     onSignIn: (String, Boolean) -> Unit,
 ) {
@@ -110,7 +114,13 @@ fun DashboardContent(
                     }
                     if (cameras.isNotEmpty()) {
                         item {
-                            SectionHeader(stringResource(R.string.dashboard_cameras_header, cameras.size, state.onlineCount))
+                            SectionHeader(stringResource(R.string.dashboard_cameras_header, cameras.size, state.onlineCount)) {
+                                if (state.connection is ConnectionState.Connected) {
+                                    TextButton(onClick = onOpenLiveGrid, modifier = Modifier.testTag("open_live_grid")) {
+                                        Text(stringResource(R.string.live_grid_open))
+                                    }
+                                }
+                            }
                         }
                         if (state.showingCachedData) {
                             item {
@@ -183,7 +193,7 @@ private fun ServerHeader(name: String, state: DashboardUiState) {
     }
 }
 
-private val MIN_TILE_WIDTH = 180.dp
+private val MIN_TILE_WIDTH = 150.dp
 
 @Composable
 private fun ConnectionBody(

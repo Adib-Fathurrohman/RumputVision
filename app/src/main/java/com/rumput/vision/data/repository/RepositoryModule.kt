@@ -1,5 +1,6 @@
 package com.rumput.vision.data.repository
 
+import com.rumput.vision.core.streaming.StreamClientProvider
 import com.rumput.vision.data.remote.FrigateConnectionTester
 import com.rumput.vision.data.remote.FrigateSession
 import com.rumput.vision.data.remote.media.FrigateCameraMedia
@@ -34,4 +35,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindCameraMedia(impl: FrigateCameraMedia): CameraMedia
+
+    @Binds
+    abstract fun bindStreamClientProvider(impl: FrigateSession): StreamClientProvider
 }

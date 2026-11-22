@@ -67,10 +67,21 @@ Manual end-to-end check on the emulator (API 36.1) against the real Frigate
 | Camera detail: large frame, health (fps, quality, reconnects, stalls, last seen), configuration, streams | Tested (ViewModel, navigation) + verified on the real server | The Live view button is visible but disabled until Phase 4. |
 | Navigation rail for short/wide windows | Implemented + verified on emulator (landscape) | |
 
-## Phase 4 — Live streaming: not started
+## Phase 4 — Live streaming: done (remote/Tailscale and latency not yet measured)
 
-MSE WebSocket data source, `CameraStreamPlayer`, player pool, grid. Needs a
-physical device for verification.
+Verified on an Infinix X6731B (Android 14) against the real server. Details in `STREAMING.md`.
+
+| Feature | Status | Notes |
+|---|---|---|
+| MSE WebSocket data source | Tested | Real WebSocket server tests: handshake, data, errors, 401, stall, fall-behind, abort, close. |
+| Stream discovery (sub / main restream) | Tested | |
+| Media3 player: buffering, catch-up, retry/backoff, rebuffer detection | Tested (logic) + verified on device | |
+| Audio: video-only while muted; fallback when FLAC fails | Verified on device | Unit tests cover codec offers; the fallback path is device-verified only. |
+| Single-camera live view (quality, mute, switch, fullscreen, landscape) | Tested (ViewModel, navigation) + verified on device | Main 1440p H.264 and sub streams played; Main rebuffers on this phone's Wi-Fi, and the "Switch to Sub" hint appeared. |
+| Stream stops on background/leave | Verified on device | App ~1 s; go2rtc drops the consumer ~5 s later. |
+| 2×2 live grid with stream limit and still fallback | Tested (ViewModel) + verified on device | All four tiles live, 3.22 Mbit/s delivered, 4 stalls in 21 s with the SMOOTH buffer profile on the phone's congested 2.4 GHz link. |
+| Low-latency WifiLock | Removed | A/B on the device showed no benefit. |
+| Tailscale remote streaming | Not verified | |
 
 ## Phase 5 — Events and recordings: not started
 
@@ -86,8 +97,9 @@ physical device for verification.
 
 ## Known limitations
 
-- Camera frames in this build are still images (refreshed every 4–30 s). Live
-  video is Phase 4.
+- Camera audio (PCMA, transcoded to FLAC by go2rtc) fails on Android's FLAC decoder, so live view
+  falls back to video only. Fix on the server: give go2rtc an AAC audio source, e.g.
+  `ffmpeg:<camera>_main#audio=aac`.
 - Cameras on this server report frequent reconnects and stalls (e.g. Garasi:
   43 reconnects and 13 stalls in an hour, quality "unusable"). This is a
   camera/network issue on the server side, shown as reported.
