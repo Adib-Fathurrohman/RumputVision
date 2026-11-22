@@ -75,6 +75,11 @@ decoded as opaque JSON and never read, stored or logged.
 **Display names:** Frigate 0.18 has no friendly-name field for cameras, so
 the app derives one from the name (`ruang_tengah` → "Ruang Tengah").
 
+**Snapshot cadence (Phase 3):** dashboard grid 360p every 10 s, Cameras list
+180p every 30 s, camera detail 720p every 4 s. Each runs only while that
+screen is visible and the server is connected. Intervals stay well above the
+server's per-frame encode time.
+
 **How the app uses these (Phase 2):**
 - Connection probe: `GET /api/version` (unauthenticated; a 401 also counts as
   "server present, sign-in required"), then `GET /api/profile`.
@@ -101,7 +106,7 @@ Rate limiting: `auth.failed_login_rate_limit` (unset here).
 
 | Method & path | Status | Notes |
 |---|---|---|
-| `GET /api/{camera}/latest.webp?height=360` | Verified | Current frame, ~45 KB at 360p. Also `.jpg` (much larger). Used for grid previews and the snapshot fallback. |
+| `GET /api/{camera}/latest.webp?height=N` | Verified | Current frame, scaled server-side. Measured on this server: 13 KB at 180p, ~45 KB at 360p, 184 KB at 720p; **0.4–1.2 s per request** (encoded on demand); `cache-control: no-store`; unknown camera → `404 {"success":false,"message":"Camera not found"}`. Optional `quality`. `.jpg` is much larger. |
 | `GET /api/{camera}/recordings/{frame_time}/snapshot.{format}` | Spec | Frame from a recording. |
 | `GET /api/{camera}?fps=&height=` | Spec | MJPEG debug stream. Docs say not to use it continuously, so the app does not use it. |
 

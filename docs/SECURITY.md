@@ -221,6 +221,13 @@ Connection tests report the redirect target to the user instead.
 Certificate failures are always reported as TLS errors, even when OkHttp's
 route fallback ends with a different exception, and they are never bypassed.
 
+Camera images (Coil) are loaded through `FrigateSession.mediaCallFactory`.
+Requests under the connected endpoint's base URL use its authenticated
+client. Any other URL goes through the plain base client, so the session token
+is never sent to a different host (tested). Frames are cached **in memory
+only**: the image loader has no disk cache, so no camera images are written
+to device storage.
+
 The app also detects authentication bypass on the server: if `/api/profile`
 answers as `anonymous` with role `admin`, Home and the connection test show a
 warning (this is the case for S1 today).

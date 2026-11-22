@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.rumput.vision.feature.cameras.CameraDetailScreen
 import com.rumput.vision.feature.cameras.CamerasScreen
 import com.rumput.vision.feature.dashboard.DashboardScreen
 import com.rumput.vision.feature.events.EventsScreen
@@ -31,9 +32,13 @@ fun RumputNavHost(
             DashboardScreen(
                 onAddServer = { navController.navigate(ServerProfileEditRoute()) },
                 onEditServer = { id -> navController.navigate(ServerProfileEditRoute(profileId = id)) },
+                onOpenCamera = { name -> navController.navigate(CameraDetailRoute(name)) },
             )
         }
-        composable<CamerasRoute> { CamerasScreen() }
+        composable<CamerasRoute> {
+            CamerasScreen(onOpenCamera = { name -> navController.navigate(CameraDetailRoute(name)) })
+        }
+        composable<CameraDetailRoute> { CameraDetailScreen(onBack = navController::navigateUp) }
         composable<EventsRoute> { EventsScreen() }
         composable<RecordingsRoute> { RecordingsScreen() }
         composable<SettingsRoute> {

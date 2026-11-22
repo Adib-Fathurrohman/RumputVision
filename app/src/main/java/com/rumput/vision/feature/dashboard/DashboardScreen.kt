@@ -2,6 +2,10 @@ package com.rumput.vision.feature.dashboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
@@ -45,13 +50,15 @@ import com.rumput.vision.core.design.theme.RumputTheme
 import com.rumput.vision.domain.model.ConnectionState
 import com.rumput.vision.domain.model.UnauthorizedReason
 import com.rumput.vision.domain.repository.SignInResult
-import com.rumput.vision.feature.cameras.CameraRow
+import com.rumput.vision.core.design.component.CameraPreviewCard
+import com.rumput.vision.core.design.component.ConnectionIndicator
 import com.rumput.vision.feature.settings.SwitchRow
 
 @Composable
 fun DashboardScreen(
     onAddServer: () -> Unit,
     onEditServer: (String) -> Unit,
+    onOpenCamera: (String) -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -59,6 +66,7 @@ fun DashboardScreen(
         state = state,
         onAddServer = onAddServer,
         onEditServer = onEditServer,
+        onOpenCamera = onOpenCamera,
         onRetry = viewModel::retry,
         onSignIn = viewModel::signIn,
     )
@@ -69,6 +77,7 @@ fun DashboardContent(
     state: DashboardUiState,
     onAddServer: () -> Unit,
     onEditServer: (String) -> Unit,
+    onOpenCamera: (String) -> Unit,
     onRetry: () -> Unit,
     onSignIn: (String, Boolean) -> Unit,
 ) {
@@ -85,44 +94,96 @@ fun DashboardContent(
                 onAction = onAddServer,
                 modifier = contentModifier,
             )
-            else -> LazyColumn(contentModifier) {
-                item {
-                    ServerStatusCard(
-                        serverName = profile.displayName,
-                        connection = state.connection,
-                        status = state.serverStatus,
-                        usesCleartext = profile.usesCleartext,
-                        modifier = Modifier.padding(horizontal = RumputTheme.spacing.gutter),
-                    )
-                }
-                item {
-                    ConnectionBody(
-                        state = state,
-                        onRetry = onRetry,
-                        onSignIn = onSignIn,
-                        onEditServer = { onEditServer(profile.id) },
-                    )
-                }
-                if (state.cameras.isNotEmpty()) {
+            else -> BoxWithConstraints(contentModifier) {
+                val spacing = RumputTheme.spacing
+                val columns = ((maxWidth - spacing.gutter * 2) / MIN_TILE_WIDTH).toInt().coerceIn(1, 6)
+                val cameras = state.dashboardCameras
+                LazyColumn(Modifier.fillMaxSize().testTag("dashboard_list")) {
+                    item { ServerHeader(profile.displayName, state) }
                     item {
-                        SectionHeader(
-                            stringResource(R.string.dashboard_cameras_header, state.cameras.size, state.onlineCount),
+                        ConnectionBody(
+                            state = state,
+                            onRetry = onRetry,
+                            onSignIn = onSignIn,
+                            onEditServer = { onEditServer(profile.id) },
                         )
                     }
-                    if (state.showingCachedData) {
+                    if (cameras.isNotEmpty()) {
                         item {
-                            WarningText(
-                                stringResource(R.string.cameras_cached_notice),
-                                Modifier.padding(horizontal = RumputTheme.spacing.gutter, vertical = RumputTheme.spacing.xs),
+                            SectionHeader(stringResource(R.string.dashboard_cameras_header, cameras.size, state.onlineCount))
+                        }
+                        if (state.showingCachedData) {
+                            item {
+                                WarningText(
+                                    stringResource(R.string.cameras_cached_notice),
+                                    Modifier.padding(horizontal = spacing.gutter, vertical = spacing.xs),
+                                )
+                            }
+                        }
+                        items(cameras.chunked(columns), key = { row -> row.joinToString { it.camera.name } }) { row ->
+                            Row(
+                                Modifier
+                                    .padding(horizontal = spacing.gutter, vertical = spacing.xs)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                            ) {
+                                row.forEach { item ->
+                                    CameraPreviewCard(
+                                        item = item,
+                                        snapshotUrl = state.snapshotUrls[item.camera.name],
+                                        refreshKey = state.snapshotTick,
+                                        onClick = { onOpenCamera(item.camera.name) },
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                }
+                                repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
+                            }
+                        }
+                    }
+                    if (state.serverStatus != null) {
+                        item { SectionHeader(stringResource(R.string.dashboard_server_header)) }
+                        item {
+                            ServerStatusCard(
+                                serverName = profile.displayName,
+                                connection = state.connection,
+                                status = state.serverStatus,
+                                usesCleartext = profile.usesCleartext,
+                                showHeader = false,
+                                showWarnings = false,
+                                modifier = Modifier.padding(horizontal = spacing.gutter),
                             )
                         }
                     }
-                    items(state.cameras, key = { it.camera.name }) { CameraRow(it) }
+                    item { Spacer(Modifier.height(spacing.xl)) }
                 }
             }
         }
     }
 }
+
+/** Server name, connection state and security warnings: always visible above the cameras. */
+@Composable
+private fun ServerHeader(name: String, state: DashboardUiState) {
+    val spacing = RumputTheme.spacing
+    val connection = state.connection
+    Column(
+        Modifier.padding(horizontal = spacing.gutter, vertical = spacing.xs),
+        verticalArrangement = Arrangement.spacedBy(spacing.xs),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            ConnectionIndicator(connection)
+        }
+        if (connection is ConnectionState.Connected && connection.anonymousAdmin) {
+            WarningText(stringResource(R.string.warning_anonymous_admin_short))
+        }
+        if (state.activeProfile?.usesCleartext == true) {
+            WarningText(stringResource(R.string.warning_cleartext_short))
+        }
+    }
+}
+
+private val MIN_TILE_WIDTH = 180.dp
 
 @Composable
 private fun ConnectionBody(

@@ -109,6 +109,7 @@ class FakeFrigateServer(
             "/api/config" -> json(configOverride ?: Fixtures.read("config.json"))
             "/api/stats" -> json(statsOverride ?: Fixtures.read("stats.json"))
             "/api/logout" -> MockResponse.Builder().code(303).addHeader("Location", "/login").build()
+            "/api/garasi/latest.webp" -> MockResponse.Builder().code(200).addHeader("Content-Type", "image/webp").body("RIFF").build()
             else -> MockResponse.Builder().code(404).body("""{"detail":"Not Found"}""").build()
         }
     }

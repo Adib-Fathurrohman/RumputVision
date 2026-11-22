@@ -199,3 +199,33 @@ class FakeCredentialStore : com.rumput.vision.core.security.CredentialStore {
         values.remove(profileId)
     }
 }
+
+class FakeCameraMedia(var baseUrl: String? = null) : com.rumput.vision.domain.repository.CameraMedia {
+    override fun latestFrameUrl(cameraName: String, height: Int): String? =
+        baseUrl?.let { "$it/api/$cameraName/latest.webp?height=$height" }
+}
+
+fun cameraWithStatus(
+    name: String,
+    status: com.rumput.vision.domain.model.CameraStatus = com.rumput.vision.domain.model.CameraStatus.ONLINE,
+    cached: Boolean = false,
+) = CameraWithStatus(
+    camera = com.rumput.vision.domain.model.Camera(
+        name = name,
+        displayName = com.rumput.vision.data.mapper.cameraDisplayName(name),
+        enabled = status != com.rumput.vision.domain.model.CameraStatus.DISABLED,
+        order = 0,
+        showOnDashboard = true,
+        liveStreams = listOf(com.rumput.vision.domain.model.CameraStream("${name}_sub", "${name}_sub")),
+        detectWidth = 2560,
+        detectHeight = 1440,
+        detectEnabled = false,
+        recordingEnabled = true,
+        snapshotsEnabled = false,
+        audioEnabled = false,
+    ),
+    status = status,
+    stats = null,
+    lastSeenOnlineEpochMillis = null,
+    isCached = cached,
+)

@@ -2,6 +2,9 @@ package com.rumput.vision.navigation
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -49,6 +52,8 @@ abstract class FakeRepositoryModule {
         @Provides @Singleton fun server(): ServerRepository = FakeServerRepository()
 
         @Provides @Singleton fun tester(): ConnectionTester = FakeConnectionTester()
+
+        @Provides @Singleton fun media(): com.rumput.vision.domain.repository.CameraMedia = com.rumput.vision.testing.FakeCameraMedia()
     }
 }
 
@@ -59,6 +64,40 @@ abstract class FakeRepositoryModule {
 class AppNavigationTest {
     @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
     @get:Rule(order = 1) val composeRule = createAndroidComposeRule<MainActivity>()
+
+    @javax.inject.Inject lateinit var serverRepository: ServerRepository
+
+    private fun addServerThroughOnboarding() {
+        composeRule.onNodeWithTag("onboarding_add_server").performClick()
+        composeRule.onNodeWithTag("field_name").performTextInput("Rumah")
+        composeRule.onNodeWithTag("field_local_url").performTextInput("http://frigate.home.arpa")
+        composeRule.onNodeWithText("None").performScrollTo().performClick()
+        composeRule.onNodeWithTag("profile_save").performScrollTo().performClick()
+        composeRule.onNodeWithTag("screen_home").assertIsDisplayed()
+    }
+
+    @Test
+    fun cameraTile_and_cameraRow_openTheDetailScreen() {
+        hiltRule.inject()
+        addServerThroughOnboarding()
+        (serverRepository as FakeServerRepository).cameras.value = listOf(
+            com.rumput.vision.testing.cameraWithStatus("garasi"),
+            com.rumput.vision.testing.cameraWithStatus("ruang_tengah", com.rumput.vision.domain.model.CameraStatus.OFFLINE),
+        )
+
+        composeRule.onNodeWithTag("dashboard_list").performScrollToNode(hasTestTag("preview_ruang_tengah"))
+        composeRule.onNodeWithTag("preview_ruang_tengah").performClick()
+        composeRule.onNodeWithTag("screen_camera_detail").assertIsDisplayed()
+        composeRule.onNodeWithText("Ruang Tengah").assertIsDisplayed()
+        composeRule.onNodeWithText("ruang_tengah_sub").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Back").performClick()
+
+        composeRule.onNodeWithTag("nav_cameras").performClick()
+        composeRule.onNodeWithTag("cameras_list").performScrollToNode(hasTestTag("camera_garasi"))
+        composeRule.onNodeWithTag("camera_garasi").performClick()
+        composeRule.onNodeWithTag("screen_camera_detail").assertIsDisplayed()
+        composeRule.onNodeWithText("Garasi").assertIsDisplayed()
+    }
 
     @Test
     fun onboarding_addServer_thenNavigateAllTabs() {

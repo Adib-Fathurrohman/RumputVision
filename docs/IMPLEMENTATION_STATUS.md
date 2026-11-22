@@ -4,11 +4,10 @@ Legend: **Not started** · **In progress** · **Implemented** (code exists,
 not automatically tested) · **Tested** (automated test executed and passing)
 · **Blocked**
 
-Last updated: 2026-11-22 (Phase 2). Test run: `./gradlew :app:testDebugUnitTest`.
-96 tests, 0 failures, 1 skipped (the opt-in live test). The live test was also
-run separately against the real server and passed. Lint: 0 errors.
+Last updated: 2026-11-22 (Phase 3). Test run: `./gradlew :app:testDebugUnitTest`.
+105 tests, 0 failures, 1 skipped (the opt-in live test). Lint: 0 errors.
 Manual end-to-end check on the emulator (API 36.1) against the real Frigate
-0.18.2 over the LAN.
+0.18.2 over the LAN, in portrait and landscape.
 
 ## Phase 0 — Audit and discovery: done
 
@@ -56,14 +55,17 @@ Manual end-to-end check on the emulator (API 36.1) against the real Frigate
 | Refresh cadence | Tested | 30 s only while Home is visible and connected; nothing in the background. |
 | Realtime `/ws` | Not started | Moved to the events phase (Phase 5). |
 
-## Phase 3 — Dashboard and cameras: in progress
+## Phase 3 — Dashboard and cameras: done
 
 | Feature | Status | Notes |
 |---|---|---|
-| Dashboard with server status and camera list | Implemented (Phase 2) | |
-| Cameras tab list with status and refresh | Implemented (Phase 2) | |
-| Snapshot previews (`latest.webp`), preview grid | Not started | |
-| Camera detail screen | Not started | |
+| Authenticated image loading (Coil via session client, memory-only cache) | Tested | Token sent only to the connected server (`FrigateCameraMediaTest`). |
+| `CameraSnapshot`, `CameraPreviewCard` components | Implemented + verified on the real server | Flicker-free refresh; non-live frames dimmed and labelled. No screenshot tests. |
+| Dashboard: preview grid (adaptive columns), connection header, server section | Tested (ViewModel, navigation) + verified on the real server | 2 columns on phone portrait, 4 in landscape. |
+| Lifecycle-aware snapshot refresh (grid 10 s, list 30 s, detail 4 s) | Tested + verified on the real server | Request log showed exact cadence, and zero requests in the background. |
+| Cameras tab: thumbnails, status, tap to detail | Tested (navigation) + verified on the real server | |
+| Camera detail: large frame, health (fps, quality, reconnects, stalls, last seen), configuration, streams | Tested (ViewModel, navigation) + verified on the real server | The Live view button is visible but disabled until Phase 4. |
+| Navigation rail for short/wide windows | Implemented + verified on emulator (landscape) | |
 
 ## Phase 4 — Live streaming: not started
 
@@ -83,6 +85,12 @@ physical device for verification.
 | Push via FCM relay | Not started | Separate service; MQTT is disabled on the server. |
 
 ## Known limitations
+
+- Camera frames in this build are still images (refreshed every 4–30 s). Live
+  video is Phase 4.
+- Cameras on this server report frequent reconnects and stalls (e.g. Garasi:
+  43 reconnects and 13 stalls in an hour, quality "unusable"). This is a
+  camera/network issue on the server side, shown as reported.
 
 - Compose BOM is held at 2026.09.00 until SDK platform 37.1 is installed.
 - Events and Recordings tabs still show "not available yet" placeholders.

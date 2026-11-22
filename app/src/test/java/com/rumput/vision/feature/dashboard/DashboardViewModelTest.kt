@@ -28,7 +28,9 @@ class DashboardViewModelTest {
     private val connection = FakeServerConnection()
     private val server = FakeServerRepository()
 
-    private fun viewModel() = DashboardViewModel(profiles, connection, server)
+    private val media = com.rumput.vision.testing.FakeCameraMedia()
+
+    private fun viewModel() = DashboardViewModel(profiles, connection, server, media)
 
     private val connected = ConnectionState.Connected(
         route = com.rumput.vision.domain.model.ConnectionRoute.LOCAL,
@@ -77,6 +79,27 @@ class DashboardViewModelTest {
 
         assertEquals(listOf("hunter2" to false), connection.signIns)
         assertEquals(SignInResult.InvalidCredentials, vm.uiState.value.signIn.result)
+        collector.cancel()
+    }
+
+    @Test
+    fun `preview frames refresh every 10 s only while connected`() = runTest(mainDispatcherRule.dispatcher) {
+        profiles.saveProfile(profile(active = true), PasswordUpdate.Keep)
+        server.cameras.value = listOf(com.rumput.vision.testing.cameraWithStatus("garasi"))
+        val vm = viewModel()
+        val collector = launch { vm.uiState.collect {} }
+        runCurrent()
+        assertEquals(-1L, vm.uiState.value.snapshotTick)
+        assertEquals(null, vm.uiState.value.snapshotUrls["garasi"])
+
+        media.baseUrl = "http://frigate.home.arpa"
+        connection.state.value = connected
+        runCurrent()
+        assertEquals(0L, vm.uiState.value.snapshotTick)
+        assertEquals("http://frigate.home.arpa/api/garasi/latest.webp?height=360", vm.uiState.value.snapshotUrls["garasi"])
+
+        advanceTimeBy(20_001)
+        assertEquals(2L, vm.uiState.value.snapshotTick)
         collector.cancel()
     }
 }

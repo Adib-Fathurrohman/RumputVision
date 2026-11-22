@@ -21,10 +21,12 @@ data class CameraStream(val label: String, val streamName: String)
 
 data class CameraStats(
     val cameraFps: Double,
+    val expectedFps: Double?,
     val detectionFps: Double,
     val detectionEnabled: Boolean,
     val connectionQuality: String?,
     val reconnectsLastHour: Int?,
+    val stallsLastHour: Int?,
 )
 
 data class CameraWithStatus(

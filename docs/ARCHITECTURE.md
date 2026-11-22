@@ -96,6 +96,25 @@ Cached data (the Room `cameras` table, DB v2) is shown immediately. Live
 status lives only in memory and expires after 2 minutes. The UI labels cached
 lists and never shows a cached camera as online.
 
+## Camera images (Phase 3)
+
+```
+CameraPreviewCard / CameraRow / detail ──▶ CameraSnapshot (Coil AsyncImage, keyed by refresh tick)
+        ▲ url + tick                                   │
+   ViewModel: CameraMedia.latestFrameUrl(name, h)      ▼
+   + ticker(connected, interval)          ImageLoader (memory cache only)
+                                            └─ OkHttpNetworkFetcher ─▶ FrigateSession.mediaCallFactory
+```
+
+- `core/common/ticker` drives refreshes. It emits only while connected, and
+  `WhileSubscribed` stops it when the screen is not observed.
+- The previous frame stays on screen while the next loads
+  (`placeholderMemoryCacheKey`), so refreshes do not flicker.
+- Non-live cameras are dimmed and labelled, so an old frame is never mistaken
+  for the current view.
+- Navigation uses a bottom bar on phones in portrait and a side rail on
+  short (landscape phone) or wide windows.
+
 ## Notifications (future)
 
 ```

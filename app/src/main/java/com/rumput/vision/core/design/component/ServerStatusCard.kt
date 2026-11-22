@@ -34,6 +34,8 @@ fun ServerStatusCard(
     status: ServerStatus?,
     usesCleartext: Boolean,
     modifier: Modifier = Modifier,
+    showHeader: Boolean = true,
+    showWarnings: Boolean = true,
 ) {
     val spacing = RumputTheme.spacing
     Column(
@@ -44,9 +46,11 @@ fun ServerStatusCard(
             .padding(spacing.lg),
         verticalArrangement = Arrangement.spacedBy(spacing.sm),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(serverName, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-            ConnectionIndicator(connection)
+        if (showHeader) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(serverName, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                ConnectionIndicator(connection)
+            }
         }
         if (connection is ConnectionState.Connected) {
             val route = stringResource(
@@ -83,10 +87,12 @@ fun ServerStatusCard(
                 )
             }
         }
-        if (connection is ConnectionState.Connected && connection.anonymousAdmin) {
-            WarningText(stringResource(R.string.warning_anonymous_admin))
+        if (showWarnings) {
+            if (connection is ConnectionState.Connected && connection.anonymousAdmin) {
+                WarningText(stringResource(R.string.warning_anonymous_admin))
+            }
+            if (usesCleartext) WarningText(stringResource(R.string.warning_cleartext_short))
         }
-        if (usesCleartext) WarningText(stringResource(R.string.warning_cleartext_short))
     }
 }
 

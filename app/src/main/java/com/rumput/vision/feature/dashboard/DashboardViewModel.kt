@@ -7,6 +7,8 @@ import com.rumput.vision.domain.model.CameraWithStatus
 import com.rumput.vision.domain.model.ConnectionState
 import com.rumput.vision.domain.model.ServerProfile
 import com.rumput.vision.domain.model.ServerStatus
+import com.rumput.vision.core.common.ticker
+import com.rumput.vision.domain.repository.CameraMedia
 import com.rumput.vision.domain.repository.ServerConnection
 import com.rumput.vision.domain.repository.ServerProfileRepository
 import com.rumput.vision.domain.repository.ServerRepository
@@ -22,6 +24,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
@@ -40,7 +43,12 @@ data class DashboardUiState(
     val serverStatus: ServerStatus? = null,
     val cameras: List<CameraWithStatus> = emptyList(),
     val signIn: SignInUiState = SignInUiState(),
+    /** Changes every [SNAPSHOT_INTERVAL_MILLIS] while connected; previews reload when it changes. */
+    val snapshotTick: Long = -1,
+    val snapshotUrls: Map<String, String?> = emptyMap(),
 ) {
+    val dashboardCameras: List<CameraWithStatus> get() = cameras.filter { it.camera.showOnDashboard }
+
     val onlineCount: Int get() = cameras.count { it.status == CameraStatus.ONLINE }
     val showingCachedData: Boolean get() = cameras.isNotEmpty() && cameras.all { it.isCached }
 }
@@ -50,6 +58,7 @@ class DashboardViewModel @Inject constructor(
     profileRepository: ServerProfileRepository,
     private val connection: ServerConnection,
     private val serverRepository: ServerRepository,
+    private val cameraMedia: CameraMedia,
 ) : ViewModel() {
 
     private val signIn = MutableStateFlow(SignInUiState())
@@ -69,21 +78,32 @@ class DashboardViewModel @Inject constructor(
             }
         }
 
+    private val snapshotTicks: Flow<Long> =
+        ticker(connection.state.map { it is ConnectionState.Connected }, SNAPSHOT_INTERVAL_MILLIS).onStart { emit(-1) }
+
     val uiState: StateFlow<DashboardUiState> = merge(
         combine(
-            profileRepository.observeActiveProfile(),
-            connection.state,
-            serverRepository.observeServerStatus(),
-            serverRepository.observeCameras(),
-            signIn,
-        ) { profile, conn, status, cameras, signInState ->
-            DashboardUiState(
-                isLoading = false,
-                activeProfile = profile,
-                connection = conn,
-                serverStatus = status,
-                cameras = cameras,
-                signIn = signInState,
+            combine(
+                profileRepository.observeActiveProfile(),
+                connection.state,
+                serverRepository.observeServerStatus(),
+                serverRepository.observeCameras(),
+                signIn,
+            ) { profile, conn, status, cameras, signInState ->
+                DashboardUiState(
+                    isLoading = false,
+                    activeProfile = profile,
+                    connection = conn,
+                    serverStatus = status,
+                    cameras = cameras,
+                    signIn = signInState,
+                )
+            },
+            snapshotTicks,
+        ) { state, tick ->
+            state.copy(
+                snapshotTick = tick,
+                snapshotUrls = state.cameras.associate { it.camera.name to cameraMedia.latestFrameUrl(it.camera.name, PREVIEW_HEIGHT) },
             )
         },
         polling,
@@ -100,7 +120,11 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    private companion object {
-        const val REFRESH_INTERVAL_MILLIS = 30_000L
+    companion object {
+        private const val REFRESH_INTERVAL_MILLIS = 30_000L
+
+        /** Frigate encodes each frame on request (~0.4–1.2 s on this server), so keep this well above that. */
+        const val SNAPSHOT_INTERVAL_MILLIS = 10_000L
+        const val PREVIEW_HEIGHT = 360
     }
 }

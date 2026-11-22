@@ -2,6 +2,8 @@ package com.rumput.vision.data.repository
 
 import com.rumput.vision.data.remote.FrigateConnectionTester
 import com.rumput.vision.data.remote.FrigateSession
+import com.rumput.vision.data.remote.media.FrigateCameraMedia
+import com.rumput.vision.domain.repository.CameraMedia
 import com.rumput.vision.domain.repository.AppPreferencesRepository
 import com.rumput.vision.domain.repository.ConnectionTester
 import com.rumput.vision.domain.repository.ServerConnection
@@ -29,4 +31,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindConnectionTester(impl: FrigateConnectionTester): ConnectionTester
+
+    @Binds
+    abstract fun bindCameraMedia(impl: FrigateCameraMedia): CameraMedia
 }

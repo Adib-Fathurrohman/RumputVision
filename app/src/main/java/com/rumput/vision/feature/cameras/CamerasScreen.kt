@@ -30,13 +30,13 @@ import com.rumput.vision.core.design.theme.RumputTheme
 import com.rumput.vision.domain.model.ConnectionState
 
 @Composable
-fun CamerasScreen(viewModel: CamerasViewModel = hiltViewModel()) {
+fun CamerasScreen(onOpenCamera: (String) -> Unit, viewModel: CamerasViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    CamerasContent(state, onRefresh = viewModel::refresh)
+    CamerasContent(state, onRefresh = viewModel::refresh, onOpenCamera = onOpenCamera)
 }
 
 @Composable
-fun CamerasContent(state: CamerasUiState, onRefresh: () -> Unit) {
+fun CamerasContent(state: CamerasUiState, onRefresh: () -> Unit, onOpenCamera: (String) -> Unit) {
     RumputScreen(
         title = stringResource(R.string.nav_cameras),
         modifier = Modifier.testTag("screen_cameras"),
@@ -68,7 +68,7 @@ fun CamerasContent(state: CamerasUiState, onRefresh: () -> Unit) {
                 message = stringResource(R.string.cameras_empty_body),
                 modifier = modifier,
             )
-            else -> LazyColumn(modifier) {
+            else -> LazyColumn(modifier.testTag("cameras_list")) {
                 if (state.isRefreshing) {
                     item { LinearProgressIndicator(Modifier.padding(horizontal = RumputTheme.spacing.gutter)) }
                 }
@@ -81,7 +81,12 @@ fun CamerasContent(state: CamerasUiState, onRefresh: () -> Unit) {
                     }
                 }
                 items(state.cameras, key = { it.camera.name }) { item ->
-                    CameraRow(item)
+                    CameraRow(
+                        item = item,
+                        snapshotUrl = state.snapshotUrls[item.camera.name],
+                        refreshKey = state.snapshotTick,
+                        onClick = { onOpenCamera(item.camera.name) },
+                    )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
             }

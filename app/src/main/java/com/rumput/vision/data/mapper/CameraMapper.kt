@@ -65,10 +65,12 @@ fun cameraDisplayName(name: String): String = name
 
 fun CameraStatsDto.toDomain() = CameraStats(
     cameraFps = cameraFps,
+    expectedFps = expectedFps,
     detectionFps = detectionFps,
     detectionEnabled = detectionEnabled,
     connectionQuality = connectionQuality,
     reconnectsLastHour = reconnectsLastHour,
+    stallsLastHour = stallsLastHour,
 )
 
 fun StatsDto.toServerStatus(fallbackVersion: String?, now: Long): ServerStatus {

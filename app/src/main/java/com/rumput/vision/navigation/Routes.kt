@@ -19,3 +19,6 @@ import kotlinx.serialization.Serializable
 /** [profileId] null creates a new profile. */
 @Serializable
 data class ServerProfileEditRoute(val profileId: String? = null, val fromOnboarding: Boolean = false)
+
+@Serializable
+data class CameraDetailRoute(val cameraName: String)

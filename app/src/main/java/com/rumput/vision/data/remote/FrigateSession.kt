@@ -42,6 +42,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
+import okhttp3.Call
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import retrofit2.HttpException
 import javax.inject.Inject
@@ -52,6 +55,7 @@ internal class ActiveEndpoint(
     val profileId: String,
     val route: ConnectionRoute,
     val url: ServerUrl,
+    val client: OkHttpClient,
     val api: FrigateApi,
 )
 
@@ -139,6 +143,20 @@ class FrigateSession @Inject constructor(
         }
     }
 
+    /** Base URL of the connected endpoint, or null when not connected. */
+    val connectedBaseUrl: ServerUrl?
+        get() = active?.takeIf { _state.value is ConnectionState.Connected }?.url
+
+    /**
+     * Call factory for media (images, later video). Requests under the connected endpoint's base URL use
+     * its authenticated client; anything else gets the base client, so credentials never leak elsewhere.
+     */
+    val mediaCallFactory: Call.Factory = Call.Factory { request ->
+        val endpoint = active
+        val client = if (endpoint != null && endpoint.url.contains(request.url)) endpoint.client else baseClient
+        client.newCall(request)
+    }
+
     override fun reconnect() {
         reconnectRequests.update { it + 1 }
     }
@@ -165,7 +183,8 @@ class FrigateSession @Inject constructor(
             return@withLock
         }
 
-        val endpoint = ActiveEndpoint(profile.id, candidate.route, candidate.url, apiFactory.create(candidate.url, clientFor(profile, candidate.url)))
+        val client = clientFor(profile, candidate.url)
+        val endpoint = ActiveEndpoint(profile.id, candidate.route, candidate.url, client, apiFactory.create(candidate.url, client))
 
         if (profile.authMode == AuthMode.FRIGATE_LOGIN) {
             ensureToken(profile, candidate.url)?.let { reason ->
@@ -337,4 +356,11 @@ class FrigateSession @Inject constructor(
         const val RESOLVE_TIMEOUT_MILLIS = 30_000L
         const val NETWORK_SETTLE_MILLIS = 750L
     }
+}
+
+/** True if [url] is on the same origin as this base URL and under its path. */
+internal fun ServerUrl.contains(url: HttpUrl): Boolean {
+    val base = "$value/".toHttpUrl()
+    return url.scheme == base.scheme && url.host == base.host && url.port == base.port &&
+        url.encodedPath.startsWith(base.encodedPath)
 }

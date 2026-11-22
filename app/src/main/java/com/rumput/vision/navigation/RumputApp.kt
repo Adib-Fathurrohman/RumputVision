@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.window.core.layout.WindowSizeClass
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination
@@ -46,7 +47,14 @@ fun RumputAppContent(startDestination: Any) {
     val destination = backStackEntry?.destination
     val showNavigation = TopLevelDestination.entries.any { destination.isOn(it) }
 
-    val adaptiveType = NavigationSuiteScaffoldDefaults.navigationSuiteType(currentWindowAdaptiveInfoV2())
+    val adaptiveInfo = currentWindowAdaptiveInfoV2()
+    // Phones in landscape are short: a side rail leaves the height for camera previews.
+    val isShort = !adaptiveInfo.windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+    val adaptiveType = if (isShort) {
+        NavigationSuiteType.NavigationRail
+    } else {
+        NavigationSuiteScaffoldDefaults.navigationSuiteType(adaptiveInfo)
+    }
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             TopLevelDestination.entries.forEach { item ->
